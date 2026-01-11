@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherPlanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25 55 Q10 55 10 42 Q10 30 25 28 Q28 15 45 15 Q62 15 68 28 Q72 25 80 28 Q92 30 92 45 Q92 58 78 58 Z' fill='%233b82f6'/%3E%3Ccircle cx='30' cy='40' r='10' fill='%2322c55e'/%3E%3Ccircle cx='55' cy='40' r='10' fill='%23facc15'/%3E%3Ccircle cx='80' cy='40' r='10' fill='%23dc2626'/%3E%3Cline x1='25' y1='65' x2='25' y2='82' stroke='%233b82f6' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='40' y1='65' x2='40' y2='82' stroke='%233b82f6' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='55' y1='65' x2='55' y2='82' stroke='%233b82f6' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='70' cy='70' r='4' fill='%2360a5fa'/%3E%3Ccircle cx='80' cy='78' r='4' fill='%2360a5fa'/%3E%3Ccircle cx='90' cy='70' r='4' fill='%2360a5fa'/%3E%3C/svg%3E">
+  <style>
+:root {
+  --powder: rgba(59, 130, 246, 0.9);
+  --good: #22c55e;
+  --fair: #ca8a04;
+  --icy: #7c3aed;
+  --nogo: #dc2626;
+}
+
+body {
+  background: #f8fafc;
+  font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.resort-link {
+  text-decoration: none;
+  color: #475569;
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.resort-link:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  scroll-margin-top: 20px;
+  height: 100%;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.chart-header .resort-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.chart-header .resort-location {
+  line-height: 1.2;
+}
+
+.precip-totals {
+  display: flex;
+  margin-left: 40px;
+  margin-bottom: 4px;
+  min-height: 22px;
+}
+
+.precip-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.precip-day.historical {
+  opacity: 0.45;
+}
+
+.snow-total {
+  background: rgba(59, 130, 246, 0.9);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.rain-total {
+  background: #22c55e;
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.chart {
+  position: relative;
+  height: 200px;
+  margin-bottom: 0.75rem;
+}
+
+.chart-bands {
+  position: absolute;
+  top: 0;
+  left: 40px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.day-band {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.day-band:last-child {
+  border-right: none;
+}
+
+.day-band.historical {
+  opacity: 0.5;
+}
+
+.day-band.divider {
+  border-right: 2px dashed #94a3b8;
+}
+
+.day-band.powder { background: rgba(59, 130, 246, 0.15); }
+.day-band.good { background: rgba(34, 197, 94, 0.15); }
+.day-band.fair { background: rgba(202, 138, 4, 0.15); }
+.day-band.icy { background: rgba(124, 58, 237, 0.15); }
+.day-band.nogo { background: rgba(220, 38, 38, 0.15); }
+
+.y-axis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.y-label {
+  font-size: 0.6rem;
+  color: #94a3b8;
+  text-align: right;
+  padding-right: 6px;
+}
+
+.chart-lines {
+  position: absolute;
+  top: 0;
+  left: 40px;
+  right: 0;
+  bottom: 0;
+}
+
+.chart-lines svg {
+  width: 100%;
+  height: 100%;
+}
+
+.temp-line-high {
+  fill: none;
+  stroke: #ef4444;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.temp-line-low {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.precip-line {
+  fill: none;
+  stroke: #8b5cf6;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 4, 3;
+}
+
+.freezing-line {
+  stroke: #0ea5e9;
+  stroke-width: 1.5;
+  stroke-dasharray: 5, 3;
+}
+
+.data-points {
+  position: absolute;
+  top: 0;
+  left: 40px;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.data-point {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.data-point.high { background: #ef4444; }
+.data-point.low { background: #3b82f6; }
+.data-point.historical { opacity: 0.45; }
+
+.freezing-label {
+  position: absolute;
+  left: 4px;
+  font-size: 0.55rem;
+  color: #0ea5e9;
+  font-weight: 500;
+  transform: translateY(-50%);
+}
+
+.history-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #94a3b8 0px,
+    #94a3b8 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.weather-details {
+  display: flex;
+  margin-left: 40px;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.weather-day {
+  flex: 1;
+  text-align: center;
+  padding: 0 2px;
+}
+
+.weather-day.historical {
+  opacity: 0.45;
+}
+
+.weather-day.divider {
+  border-right: 2px dashed #cbd5e1;
+}
+
+.weather-day-label {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin-bottom: 2px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.weather-day-num {
+  font-size: 0.55rem;
+  color: #94a3b8;
+}
+
+.weather-temp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.weather-high { color: #ef4444; }
+.weather-low { color: #3b82f6; }
+
+.weather-precip {
+  font-size: 0.6rem;
+  color: #8b5cf6;
+  margin-bottom: 4px;
+}
+
+.weather-quality {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+.weather-quality.powder { background: var(--powder); }
+.weather-quality.good { background: var(--good); }
+.weather-quality.fair { background: var(--fair); }
+.weather-quality.icy { background: var(--icy); }
+.weather-quality.nogo { background: var(--nogo); }
+
+.weather-icon {
+  width: 32px;
+  height: 32px;
+  margin: -6px auto -4px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend-color.powder { background: var(--powder); }
+.legend-color.good { background: var(--good); }
+.legend-color.fair { background: var(--fair); }
+.legend-color.icy { background: var(--icy); }
+.legend-color.nogo { background: var(--nogo); }
+
+.legend-line {
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-line.temp-high { background: #ef4444; }
+.legend-line.temp-low { background: #3b82f6; }
+.legend-line.precip { 
+  background: repeating-linear-gradient(
+    90deg,
+    #8b5cf6 0px,
+    #8b5cf6 4px,
+    transparent 4px,
+    transparent 7px
+  );
+}
+.legend-line.freezing {
+  background: repeating-linear-gradient(
+    90deg,
+    #0ea5e9 0px,
+    #0ea5e9 5px,
+    transparent 5px,
+    transparent 8px
+  );
+}
+
+.legend-precip-box {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: white;
+  display: inline-block;
+}
+
+.legend-precip-box.snow { background: rgba(59, 130, 246, 0.9); }
+.legend-precip-box.rain { background: #22c55e; }
+
+/* Toggle buttons */
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 6px;
+}
+
+.view-toggle-btn {
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.view-toggle-btn:hover {
+  color: #334155;
+}
+
+.view-toggle-btn.active {
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.debug-btn {
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.65rem;
+  font-family: monospace;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: 8px;
+}
+
+.debug-btn:hover {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+
+.debug-btn.copied {
+  background: #22c55e;
+  color: white;
+  border-color: #22c55e;
+}
+
+/* Hourly view */
+.hourly-container {
+  overflow-x: auto;
+  margin-left: 40px;
+  margin-bottom: 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.hourly-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.hourly-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hourly-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.hourly-chart {
+  display: flex;
+  min-width: max-content;
+  height: 200px;
+  position: relative;
+}
+
+.hour-band {
+  width: 36px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.hour-band:last-child {
+  border-right: none;
+}
+
+.hour-band.night { background: #e5e7eb; }
+.hour-band.powder { background: rgba(59, 130, 246, 0.15); }
+.hour-band.good { background: rgba(34, 197, 94, 0.15); }
+.hour-band.fair { background: rgba(202, 138, 4, 0.15); }
+.hour-band.icy { background: rgba(124, 58, 237, 0.15); }
+.hour-band.nogo { background: rgba(220, 38, 38, 0.15); }
+
+.hour-band.day-start {
+  border-left: 2px dashed #94a3b8;
+}
+
+.hour-band.historical {
+  opacity: 0.5;
+}
+
+.hour-band.history-end {
+  border-right: 2px dashed #94a3b8;
+}
+
+.hour-detail.historical {
+  opacity: 0.5;
+}
+
+.hour-detail.history-end {
+  border-right: 2px dashed #cbd5e1;
+}
+
+.hourly-precip-slot.historical {
+  opacity: 0.5;
+}
+
+.hourly-details {
+  display: flex;
+  min-width: max-content;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.hour-detail {
+  width: 36px;
+  flex-shrink: 0;
+  text-align: center;
+  padding: 0 2px;
+}
+
+.hour-detail.day-start {
+  border-left: 2px dashed #cbd5e1;
+}
+
+.hour-label {
+  font-size: 0.55rem;
+  color: #94a3b8;
+  margin-bottom: 2px;
+  line-height: 1.1;
+}
+
+.hour-day-label {
+  font-size: 0.5rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+
+.hour-temp {
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.hour-precip {
+  font-size: 0.55rem;
+  color: #8b5cf6;
+  margin-bottom: 2px;
+}
+
+.hour-wind {
+  font-size: 0.55rem;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.hour-wind .wind-unit {
+  font-size: 0.45rem;
+  opacity: 0.7;
+}
+
+.hour-quality {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+.hour-quality.night { background: #9ca3af; }
+.hour-quality.powder { background: var(--powder); }
+.hour-quality.good { background: var(--good); }
+.hour-quality.fair { background: var(--fair); }
+.hour-quality.icy { background: var(--icy); }
+.hour-quality.nogo { background: var(--nogo); }
+
+.hour-icon {
+  width: 28px;
+  height: 28px;
+  margin: -4px auto 0;
+}
+
+.hourly-precip-totals {
+  display: flex;
+  min-width: max-content;
+  margin-bottom: 4px;
+  min-height: 18px;
+}
+
+.hourly-precip-slot {
+  width: 36px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.hourly-precip-slot .snow-total {
+  font-size: 0.5rem;
+  padding: 1px 3px;
+}
+
+.hourly-y-axis {
+  position: absolute;
+  left: 0;
+  top: 22px;
+  height: 200px;
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0;
+  background: white;
+  z-index: 2;
+}
+
+.hourly-chart-wrapper {
+  position: relative;
+  height: 200px;
+}
+
+.hourly-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.hourly-lines svg {
+  width: 100%;
+  height: 100%;
+}
+
+.search-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mobile edit button */
+.edit-btn-mobile {
+  display: none;
+}
+
+/* Activity toggle */
+.activity-toggle {
+  display: inline-flex;
+  background: #e2e8f0;
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.activity-btn {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #64748b;
+}
+
+.activity-btn:hover {
+  color: #1e293b;
+}
+
+.activity-btn.active {
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Refresh button */
+.refresh-btn {
+  padding: 2px 8px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.refresh-btn.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.refresh-btn-mobile {
+  display: none;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Score badges for mobile */
+.score-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.score-badge.powder { background: var(--powder); }
+.score-badge.good { background: var(--good); }
+.score-badge.fair { background: var(--fair); }
+.score-badge.icy { background: var(--icy); }
+.score-badge.nogo { background: var(--nogo); }
+
+.weather-day .score-badge {
+  margin-bottom: 4px;
+}
+
+/* Mobile compact view */
+.mobile-forecast {
+  display: none;
+}
+
+@media (max-width: 575.98px) {
+  .chart, .precip-totals, .weather-details {
+    display: none;
+  }
+
+  .debug-btn {
+    display: none;
+  }
+
+  .locations-bar {
+    display: none !important;
+  }
+
+  .resort-location {
+    display: none;
+  }
+
+  .edit-btn-mobile {
+    display: block;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.75rem;
+  }
+
+  .refresh-btn-mobile {
+    display: block;
+    position: absolute;
+    top: 12px;
+    right: 110px;
+    font-size: 1rem;
+    padding: 2px 8px;
+    line-height: 1;
+  }
+
+  .refresh-btn-mobile.spinning {
+    animation: spin 1s linear infinite;
+  }
+  
+  .mobile-forecast {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .mobile-day {
+    flex: 1 1 calc(20% - 8px);
+    min-width: 54px;
+    text-align: center;
+    padding: 6px 4px;
+    background: #f8fafc;
+    border-radius: 6px;
+  }
+
+  .mobile-day.historical {
+    display: none;
+  }
+
+  .hour-band.historical,
+  .hour-detail.historical,
+  .hourly-precip-slot.historical {
+    display: none;
+  }
+
+  .mobile-day .score-badge {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .mobile-day-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    margin-bottom: 2px;
+  }
+
+  .mobile-day-num {
+    font-size: 0.55rem;
+    color: #94a3b8;
+  }
+
+  .mobile-icon {
+    width: 28px;
+    height: 28px;
+    margin: 0 auto;
+  }
+
+  .mobile-temps {
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .mobile-temps .high { color: #ef4444; }
+  .mobile-temps .low { color: #3b82f6; }
+
+  .mobile-precip {
+    font-size: 0.55rem;
+    color: #8b5cf6;
+  }
+
+  .mobile-snow {
+    font-size: 0.5rem;
+    color: #3b82f6;
+    font-weight: 600;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="container py-4 position-relative">
+    <div class="text-center mb-4">
+      <div class="d-flex align-items-center justify-content-center gap-3">
+        <svg viewBox="0 0 100 100" style="width: 64px; height: 64px;">
+          <path d="M25 55 Q10 55 10 42 Q10 30 25 28 Q28 15 45 15 Q62 15 68 28 Q72 25 80 28 Q92 30 92 45 Q92 58 78 58 Z" fill="#3b82f6"/>
+          <circle cx="35" cy="38" r="8" fill="#22c55e"/>
+          <circle cx="55" cy="38" r="8" fill="#facc15"/>
+          <circle cx="75" cy="38" r="8" fill="#dc2626"/>
+          <line x1="30" y1="62" x2="30" y2="78" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+          <line x1="42" y1="62" x2="42" y2="78" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+          <line x1="54" y1="62" x2="54" y2="78" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="68" cy="68" r="4" fill="#60a5fa"/>
+          <circle cx="78" cy="75" r="4" fill="#60a5fa"/>
+          <circle cx="88" cy="68" r="4" fill="#60a5fa"/>
+        </svg>
+        <div class="text-start">
+          <h1 class="h3 mb-0 fw-bold">WeatherPlanner</h1>
+          <div id="tagline" class="text-muted" style="font-size: 0.9rem;">Plan your next day skiing</div>
+        </div>
+      </div>
+      <div class="mt-2">
+        <div class="activity-toggle">
+          <button class="activity-btn active" data-activity="skiing" onclick="app.setActivity('skiing')">🎿 Skiing</button>
+          <button class="activity-btn" data-activity="dogwalk" onclick="app.setActivity('dogwalk')">🐕 Dog Walk</button>
+        </div>
+      </div>
+    </div>
+    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.6.0</div>
+
+    <div class="locations-bar d-flex flex-wrap align-items-center gap-2 mb-3">
+      <span id="locationsLabel" class="text-muted small">My Resorts:</span>
+      <div class="d-flex flex-wrap gap-2" id="resortNav"></div>
+      <button class="btn btn-outline-secondary btn-sm edit-btn-desktop" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
+        ⚙️ Edit
+      </button>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <span id="lastUpdated" class="text-muted" style="font-size: 0.7rem;">Updated just now</span>
+        <button id="refreshBtn" class="btn btn-outline-secondary btn-sm refresh-btn" onclick="app.manualRefresh()" title="Refresh data">↻</button>
+      </div>
+    </div>
+
+    <button class="btn btn-outline-secondary btn-sm edit-btn-mobile" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
+      Edit Locations
+    </button>
+    <button id="refreshBtnMobile" class="btn btn-outline-secondary btn-sm refresh-btn-mobile" onclick="app.manualRefresh()" title="Refresh data">↻</button>
+
+    <div class="collapse mb-4" id="editSection">
+      <div class="card card-body">
+        <h6 id="editHeader" class="mb-3">Manage Resorts (max 10)</h6>
+        <div id="resortList" class="mb-3"></div>
+        <div id="addResortSection"></div>
+      </div>
+    </div>
+
+    <div class="legend-bar mb-3">
+      <div class="legend-items">
+        <span><span class="legend-color powder"></span> Powder</span>
+        <span><span class="legend-color good"></span> Good</span>
+        <span><span class="legend-color fair"></span> Fair</span>
+        <span><span class="legend-color icy"></span> Icy</span>
+        <span><span class="legend-color nogo"></span> No-Go</span>
+        <span><span class="legend-line temp-high"></span> High</span>
+        <span><span class="legend-line temp-low"></span> Low</span>
+        <span><span class="legend-line precip"></span> Precip %</span>
+        <span><span class="legend-line freezing"></span> 32°F</span>
+        <span><span class="legend-precip-box snow">x"</span> Snow</span>
+        <span><span class="legend-precip-box rain">x"</span> Rain</span>
+      </div>
+    </div>
+
+    <div class="row g-4" id="chartsContainer">
+      <div class="col-12 text-center py-5">
+        <div class="loading-spinner"></div>
+        <p class="text-muted">Loading...</p>
+      </div>
+    </div>
+
+    <div class="text-center text-muted small py-4">
+      © 2026 WeatherPlanner. All rights reserved.
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+// WeatherPlanner v0.5.0 - Bundled version
+(function() {
+  'use strict';
+
+  // ============ CONFIG ============
+  const DEFAULT_LOCATIONS = {
+    skiing: [
+      { slug: 'bristol-mountain', name: 'Bristol Mountain', lat: 42.73, lon: -77.40, timezone: 'America/New_York', location: 'Canandaigua, NY, USA' },
+      { slug: 'holiday-valley', name: 'Holiday Valley', lat: 42.27, lon: -78.67, timezone: 'America/New_York', location: 'Ellicottville, NY, USA' },
+      { slug: 'jay-peak', name: 'Jay Peak', lat: 44.94, lon: -72.53, timezone: 'America/New_York', location: 'Jay, VT, USA' }
+    ],
+    dogwalk: []
+  };
+
+  const MAX_LOCATIONS = 10;
+  const REFRESH_INTERVAL = 30 * 60 * 1000;
+  const STALE_THRESHOLD = 15 * 60 * 1000;
+
+  const WEATHER_CODES = {
+    snow: [71, 73, 75, 77, 85, 86],
+    heavySnow: [75, 86],
+    rain: [61, 63, 65, 80, 81, 82],
+    heavyRain: [65, 82],
+    freezing: [56, 57, 66, 67],
+    drizzle: [51, 53, 55],
+    dry: [0, 1, 2, 3, 45, 48]
+  };
+
+  const ICON_MAP = {
+    0: '01', 1: '01', 2: '02', 3: '03',
+    45: '50', 48: '50',
+    51: '09', 53: '09', 55: '09', 56: '09', 57: '09',
+    61: '10', 63: '10', 65: '10', 66: '10', 67: '10',
+    71: '13', 73: '13', 75: '13', 77: '13',
+    80: '09', 81: '09', 82: '09',
+    85: '13', 86: '13',
+    95: '11', 96: '11', 99: '11'
+  };
+
+  // ============ STORAGE ============
+  function getStorageKey(activity) {
+    return `weatherplanner-locations-${activity}`;
+  }
+
+  function loadLocations(activity) {
+    const key = getStorageKey(activity);
+    const saved = localStorage.getItem(key);
+    console.log('loadLocations:', { activity, key, saved });
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        console.log('Loaded from storage:', parsed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Parse error:', e);
+      }
+    }
+    console.log('Using defaults:', DEFAULT_LOCATIONS[activity]);
+    return DEFAULT_LOCATIONS[activity] || [];
+  }
+
+  function saveLocations(activity, locations) {
+    const key = getStorageKey(activity);
+    localStorage.setItem(key, JSON.stringify(locations));
+  }
+
+  function loadActivity() {
+    return localStorage.getItem('weatherplanner-activity') || 'skiing';
+  }
+
+  function saveActivity(activity) {
+    localStorage.setItem('weatherplanner-activity', activity);
+  }
+
+  async function getUserLocation() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const tzResponse = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&timezone=auto&forecast_days=1`
+            );
+            const tzData = await tzResponse.json();
+            resolve({
+              slug: 'my-location',
+              name: 'My Location',
+              lat: latitude,
+              lon: longitude,
+              timezone: tzData.timezone || 'America/New_York',
+              location: `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`
+            });
+          } catch (e) {
+            resolve({
+              slug: 'my-location',
+              name: 'My Location',
+              lat: latitude,
+              lon: longitude,
+              timezone: 'America/New_York',
+              location: `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`
+            });
+          }
+        },
+        (error) => reject(error),
+        { enableHighAccuracy: false, timeout: 10000 }
+      );
+    });
+  }
+
+  async function initDogWalkLocation() {
+    const locations = loadLocations('dogwalk');
+    if (locations.length === 0) {
+      try {
+        const userLoc = await getUserLocation();
+        locations.push(userLoc);
+        saveLocations('dogwalk', locations);
+        return locations;
+      } catch (e) {
+        console.log('Could not get user location:', e.message);
+        return [];
+      }
+    }
+    return locations;
+  }
+
+  // ============ API ============
+  async function fetchForecast(resort) {
+    const url = `https://api.open-meteo.com/v1/gfs?` +
+      `latitude=${resort.lat}&longitude=${resort.lon}` +
+      `&hourly=temperature_2m,precipitation_probability,snowfall,weather_code` +
+      `&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min,precipitation_probability_max,snowfall_sum,rain_sum,weather_code` +
+      `&temperature_unit=fahrenheit` +
+      `&timezone=${resort.timezone}` +
+      `&past_days=5` +
+      `&forecast_days=10`;
+    
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch forecast');
+    const data = await response.json();
+    
+    const sunTimes = {};
+    data.daily.time.forEach((date, i) => {
+      sunTimes[date] = { sunrise: data.daily.sunrise[i], sunset: data.daily.sunset[i] };
+    });
+    
+    const dailyFromHourly = {};
+    data.hourly.time.forEach((t, i) => {
+      const dateStr = t.split('T')[0];
+      const sun = sunTimes[dateStr];
+      if (!sun) return;
+      
+      const hourTime = new Date(t);
+      const sunrise = new Date(sun.sunrise);
+      const sunset = new Date(sun.sunset);
+      sunrise.setMinutes(sunrise.getMinutes() - 30);
+      sunset.setMinutes(sunset.getMinutes() + 30);
+      
+      if (hourTime < sunrise || hourTime > sunset) return;
+      
+      if (!dailyFromHourly[dateStr]) {
+        dailyFromHourly[dateStr] = { temps: [], precips: [], snowfall: 0, weatherCodes: [] };
+      }
+      
+      dailyFromHourly[dateStr].temps.push(data.hourly.temperature_2m[i]);
+      dailyFromHourly[dateStr].precips.push(data.hourly.precipitation_probability[i]);
+      dailyFromHourly[dateStr].snowfall += data.hourly.snowfall[i] || 0;
+      dailyFromHourly[dateStr].weatherCodes.push(data.hourly.weather_code[i]);
+    });
+    
+    const mergedDaily = {
+      time: [], temperature_2m_max: [], temperature_2m_min: [],
+      precipitation_probability_max: [], snowfall_sum: [], rain_sum: [],
+      weather_code: [], daylight_temp_max: [], daylight_temp_min: [],
+      daylight_precip_max: [], daylight_snow_sum: [], daylight_weather_codes: []
+    };
+    
+    data.daily.time.forEach((t, i) => {
+      mergedDaily.time.push(t);
+      mergedDaily.temperature_2m_max.push(data.daily.temperature_2m_max[i]);
+      mergedDaily.temperature_2m_min.push(data.daily.temperature_2m_min[i]);
+      mergedDaily.precipitation_probability_max.push(data.daily.precipitation_probability_max[i]);
+      mergedDaily.snowfall_sum.push(data.daily.snowfall_sum[i]);
+      mergedDaily.rain_sum.push(data.daily.rain_sum[i] || 0);
+      mergedDaily.weather_code.push(data.daily.weather_code[i]);
+      
+      const dayData = dailyFromHourly[t];
+      if (dayData && dayData.temps.length > 0) {
+        mergedDaily.daylight_temp_max.push(Math.max(...dayData.temps));
+        mergedDaily.daylight_temp_min.push(Math.min(...dayData.temps));
+        mergedDaily.daylight_precip_max.push(Math.max(...dayData.precips));
+        mergedDaily.daylight_snow_sum.push(dayData.snowfall);
+        mergedDaily.daylight_weather_codes.push(dayData.weatherCodes);
+      } else {
+        mergedDaily.daylight_temp_max.push(data.daily.temperature_2m_max[i]);
+        mergedDaily.daylight_temp_min.push(data.daily.temperature_2m_min[i]);
+        mergedDaily.daylight_precip_max.push(data.daily.precipitation_probability_max[i]);
+        mergedDaily.daylight_snow_sum.push(data.daily.snowfall_sum[i]);
+        mergedDaily.daylight_weather_codes.push([data.daily.weather_code[i]]);
+      }
+    });
+    
+    return { latitude: data.latitude, longitude: data.longitude, elevation: data.elevation, timezone: data.timezone, daily: mergedDaily };
+  }
+
+  async function fetchHourlyForecast(resort) {
+    const url = `https://api.open-meteo.com/v1/gfs?` +
+      `latitude=${resort.lat}&longitude=${resort.lon}` +
+      `&hourly=temperature_2m,precipitation_probability,snowfall,weather_code,wind_speed_10m,wind_gusts_10m` +
+      `&daily=sunrise,sunset` +
+      `&temperature_unit=fahrenheit` +
+      `&wind_speed_unit=mph` +
+      `&timezone=${resort.timezone}` +
+      `&past_hours=8` +
+      `&forecast_hours=72`;
+    
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch hourly forecast');
+    return response.json();
+  }
+
+  async function searchLocations(query) {
+    const response = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
+    );
+    const data = await response.json();
+    return data.results || [];
+  }
+
+  // ============ SCORING ============
+  function calculateSkiingQuality(day, prevDay, prevDay2) {
+    const tempMax = day.daylightTempMax;
+    const tempMin = day.daylightTempMin;
+    const precipProb = day.daylightPrecipMax;
+    const snowfall = day.daylightSnowSum;
+    const weatherCodes = day.daylightWeatherCodes || [];
+    const rain = day.rain;
+    
+    const hasSnowCode = weatherCodes.some(c => WEATHER_CODES.snow.includes(c));
+    const hasRainCode = weatherCodes.some(c => WEATHER_CODES.rain.includes(c));
+    const hasFreezingCode = weatherCodes.some(c => WEATHER_CODES.freezing.includes(c));
+    
+    const actualRain = rain >= 2.5 && tempMax > 34 ? rain : 0;
+    const yesterdayRain = prevDay && prevDay.rain >= 2.5 && prevDay.daylightTempMax > 34;
+    
+    const warmWetStretch = prevDay && prevDay2 && 
+      ((prevDay.rain >= 2.5 && prevDay.daylightTempMax > 34) || (prevDay2.rain >= 2.5 && prevDay2.daylightTempMax > 34)) &&
+      (prevDay.daylightTempMax > 38 || prevDay2.daylightTempMax > 38);
+    
+    const frozeOvernight = prevDay && prevDay.daylightTempMin < 32;
+    const warmsDuringDay = tempMax >= 37;
+    
+    if (hasFreezingCode) return 'icy';
+    if ((snowfall >= 2 || hasSnowCode) && tempMax <= 34) return 'powder';
+    if (hasRainCode && tempMax > 34) return 'nogo';
+    if (tempMax > 38 && precipProb > 40) return 'nogo';
+    if (tempMax > 45 && precipProb > 25) return 'nogo';
+    if (actualRain >= 2.5 && tempMax > 36) return 'nogo';
+    
+    if (yesterdayRain && frozeOvernight) {
+      if (warmsDuringDay) return 'fair';
+      return 'icy';
+    }
+    if (yesterdayRain && !frozeOvernight) return 'fair';
+    if (warmWetStretch) {
+      if (frozeOvernight && !warmsDuringDay) return 'icy';
+      return 'fair';
+    }
+    
+    if (tempMax <= 32 && precipProb <= 50) return 'good';
+    if (tempMin < 30 && precipProb <= 30) return 'good';
+    if (tempMax > 32 && tempMax <= 40 && precipProb > 40) return 'icy';
+    if (precipProb <= 20) return 'fair';
+    if (tempMax <= 40 && precipProb <= 50) return 'fair';
+    
+    return 'icy';
+  }
+
+  function calculateHourlySkiingQuality(hours, index) {
+    const hour = hours[index];
+    const { temp, precip, snow, weatherCode } = hour;
+    
+    const isSnowing = WEATHER_CODES.snow.includes(weatherCode);
+    const isRaining = WEATHER_CODES.rain.includes(weatherCode);
+    const isFreezingPrecip = WEATHER_CODES.freezing.includes(weatherCode);
+    const isDry = WEATHER_CODES.dry.includes(weatherCode);
+    
+    let recentRain = false, recentSnow = false, hadFreezeAfterRain = false;
+    
+    for (let i = Math.max(0, index - 6); i < index; i++) {
+      const h = hours[i];
+      if (WEATHER_CODES.rain.includes(h.weatherCode)) recentRain = true;
+      if (WEATHER_CODES.snow.includes(h.weatherCode) || h.snow > 0) recentSnow = true;
+      if (recentRain && h.temp < 32) hadFreezeAfterRain = true;
+    }
+    
+    if (isFreezingPrecip) return 'icy';
+    if (isSnowing && temp <= 34) return 'powder';
+    if (recentSnow && temp <= 32 && isDry && precip <= 30) return 'powder';
+    if (isRaining && temp > 34) return 'nogo';
+    if (temp > 38 && precip > 50 && !isSnowing) return 'nogo';
+    if (recentRain && hadFreezeAfterRain && temp < 34) return 'icy';
+    if (recentRain && temp <= 32) return 'icy';
+    if (recentRain && temp > 32 && temp < 37) return 'icy';
+    if (recentRain && temp >= 37) return 'fair';
+    if (isDry && temp >= 15 && temp <= 32 && precip <= 20) return 'good';
+    if (isDry && temp <= 28 && precip <= 40) return 'good';
+    if (!isSnowing && temp >= 28 && temp <= 35 && precip > 40) return 'icy';
+    if (isDry && precip <= 30) return 'fair';
+    if (temp <= 40 && precip <= 50) return 'fair';
+    
+    return 'icy';
+  }
+
+  function calculateDogWalkQuality(hours, index) {
+    const hour = hours[index];
+    const { temp, precip, snow, weatherCode, wind, gusts } = hour;
+    
+    const isSnowing = WEATHER_CODES.snow.includes(weatherCode);
+    const isHeavySnow = WEATHER_CODES.heavySnow.includes(weatherCode);
+    const isRaining = WEATHER_CODES.rain.includes(weatherCode);
+    const isHeavyRain = WEATHER_CODES.heavyRain.includes(weatherCode);
+    const isFreezingPrecip = WEATHER_CODES.freezing.includes(weatherCode);
+    const isDrizzle = WEATHER_CODES.drizzle.includes(weatherCode);
+    const isDry = WEATHER_CODES.dry.includes(weatherCode);
+    
+    const isWindy = wind >= 15 || gusts >= 25;
+    const isVeryWindy = wind >= 25 || gusts >= 35;
+    
+    let recentRain = false, hadFreezeAfterRain = false;
+    for (let i = Math.max(0, index - 6); i < index; i++) {
+      const h = hours[i];
+      if ([...WEATHER_CODES.rain, ...WEATHER_CODES.drizzle].includes(h.weatherCode)) recentRain = true;
+      if (recentRain && h.temp < 32) hadFreezeAfterRain = true;
+    }
+    
+    if (isFreezingPrecip) return 'nogo';
+    if (isHeavyRain) return 'nogo';
+    if ((isRaining || isDrizzle) && isWindy) return 'nogo';
+    if (isHeavySnow && isWindy) return 'nogo';
+    if (isVeryWindy) return 'nogo';
+    if (hadFreezeAfterRain && temp < 35) return 'icy';
+    if (isRaining && !isWindy) return 'fair';
+    if (isDrizzle && !isWindy) return 'fair';
+    if (isSnowing && isWindy) return 'fair';
+    if (isWindy && isDry) return 'fair';
+    if (isSnowing && !isWindy) return 'good';
+    if (isDry && !isWindy) return 'good';
+    
+    return 'fair';
+  }
+
+  function getQualityLabel(quality, activity) {
+    if (activity === 'dogwalk') {
+      const labels = { powder: 'Good', good: 'Good', fair: 'Fair', icy: 'Icy', nogo: 'No-Go', night: 'Night' };
+      return labels[quality] || quality;
+    }
+    const labels = { powder: 'Powder', good: 'Good', fair: 'Fair', icy: 'Icy', nogo: 'No-Go', night: 'Night' };
+    return labels[quality] || quality;
+  }
+
+  // ============ RENDER ============
+  function formatDate(dateStr) {
+    const date = new Date(dateStr + 'T12:00:00');
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return `${days[date.getDay()]} ${date.getDate()}`;
+  }
+
+  function getWeatherIcon(weatherCode, isDaylightFlag) {
+    const suffix = isDaylightFlag ? 'd' : 'n';
+    const iconCode = ICON_MAP[weatherCode] || '03';
+    return `https://openweathermap.org/img/wn/${iconCode}${suffix}@2x.png`;
+  }
+
+  function isDaylight(hourTime, sunrise, sunset, bufferMinutes = 30) {
+    const hour = new Date(hourTime);
+    const rise = new Date(sunrise);
+    const set = new Date(sunset);
+    rise.setMinutes(rise.getMinutes() - bufferMinutes);
+    set.setMinutes(set.getMinutes() + bufferMinutes);
+    return hour >= rise && hour <= set;
+  }
+
+  function getVisibleDays(allDays) {
+    if (window.innerWidth < 576) {
+      return allDays.filter(d => !d.isHistorical).slice(0, 10);
+    }
+    return allDays;
+  }
+
+  function renderChart(resort, data) {
+    const daily = data.daily;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const allDays = daily.time.map((t, i) => {
+      const dayDate = new Date(t + 'T12:00:00');
+      return {
+        date: formatDate(t), rawDate: t,
+        tempMax: Math.round(daily.temperature_2m_max[i]),
+        tempMin: Math.round(daily.temperature_2m_min[i]),
+        precip: daily.precipitation_probability_max[i],
+        snow: daily.snowfall_sum[i],
+        rain: daily.rain_sum[i],
+        weatherCode: daily.weather_code[i],
+        daylightTempMax: Math.round(daily.daylight_temp_max[i]),
+        daylightTempMin: Math.round(daily.daylight_temp_min[i]),
+        daylightPrecipMax: daily.daylight_precip_max[i],
+        daylightSnowSum: daily.daylight_snow_sum[i],
+        daylightWeatherCodes: daily.daylight_weather_codes[i],
+        isHistorical: dayDate < today
+      };
+    });
+    
+    allDays.forEach((day, i) => {
+      day.quality = calculateSkiingQuality(day, i > 0 ? allDays[i-1] : null, i > 1 ? allDays[i-2] : null);
+    });
+    
+    const days = getVisibleDays(allDays);
+    const lastHistoricalIdx = days.reduce((acc, d, i) => d.isHistorical ? i : acc, -1);
+    const allTemps = days.flatMap(d => [d.tempMax, d.tempMin]);
+    const minTemp = Math.min(...allTemps);
+    const maxTemp = Math.max(...allTemps);
+    const yMin = Math.floor((minTemp - 5) / 5) * 5;
+    const yMax = Math.ceil((maxTemp + 5) / 5) * 5;
+    const chartHeight = 200;
+    const dayWidth = 100 / days.length;
+    
+    const scaleTemp = (temp) => chartHeight - ((temp - yMin) / (yMax - yMin)) * chartHeight;
+    const scalePrecip = (precip) => chartHeight - (precip / 100) * chartHeight;
+    
+    const tempHighPoints = days.map((d, i) => `${(i + 0.5) * dayWidth},${(scaleTemp(d.tempMax) / chartHeight) * 100}`);
+    const tempLowPoints = days.map((d, i) => `${(i + 0.5) * dayWidth},${(scaleTemp(d.tempMin) / chartHeight) * 100}`);
+    const precipPoints = days.map((d, i) => `${(i + 0.5) * dayWidth},${(scalePrecip(d.precip) / chartHeight) * 100}`);
+    
+    const yLabels = [];
+    const yStep = Math.ceil((yMax - yMin) / 5 / 5) * 5;
+    for (let t = yMax; t >= yMin; t -= yStep) yLabels.push(`${t}°`);
+
+    return `
+      <div class="col-12">
+        <div class="chart-card" id="${resort.slug}">
+          <div class="chart-header">
+            <div>
+              <div class="resort-name">${resort.name}</div>
+              <div class="resort-location text-muted" style="font-size: 0.75rem;">${resort.location || ''}</div>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <div class="view-toggle">
+                <button class="view-toggle-btn active" data-view="daily" data-resort="${resort.slug}">Daily</button>
+                <button class="view-toggle-btn" data-view="hourly" data-resort="${resort.slug}">Hourly</button>
+              </div>
+              <button class="debug-btn" data-resort="${resort.slug}" title="Copy API data">{ }</button>
+            </div>
+          </div>
+          <div class="daily-view" data-resort="${resort.slug}">
+            <div class="precip-totals">
+              ${days.map(d => `<div class="precip-day${d.isHistorical ? ' historical' : ''}">${d.snow >= 0.25 ? `<span class="snow-total">${(d.snow / 2.54).toFixed(1)}"</span>` : ''}${d.rain >= 2.5 && d.tempMax > 34 ? `<span class="rain-total">${(d.rain / 25.4).toFixed(2)}"</span>` : ''}</div>`).join('')}
+            </div>
+            <div class="chart">
+              <div class="y-axis">${yLabels.map(l => `<span class="y-label">${l}</span>`).join('')}</div>
+              <div class="chart-bands">${days.map((d, i) => `<div class="day-band ${d.quality}${d.isHistorical ? ' historical' : ''}${i === lastHistoricalIdx ? ' divider' : ''}"></div>`).join('')}</div>
+              <div class="chart-lines">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                  ${yMin <= 32 && yMax >= 32 ? `<line class="freezing-line" x1="0" y1="${((yMax - 32) / (yMax - yMin)) * 100}" x2="100" y2="${((yMax - 32) / (yMax - yMin)) * 100}" vector-effect="non-scaling-stroke"/>` : ''}
+                  <polyline class="precip-line" points="${precipPoints.join(' ')}" vector-effect="non-scaling-stroke"/>
+                  <polyline class="temp-line-low" points="${tempLowPoints.join(' ')}" vector-effect="non-scaling-stroke"/>
+                  <polyline class="temp-line-high" points="${tempHighPoints.join(' ')}" vector-effect="non-scaling-stroke"/>
+                </svg>
+              </div>
+              <div class="data-points">
+                ${yMin <= 32 && yMax >= 32 ? `<span class="freezing-label" style="top:${((yMax - 32) / (yMax - yMin)) * 100}%">32°F</span>` : ''}
+                ${lastHistoricalIdx >= 0 ? `<div class="history-divider" style="left:${((lastHistoricalIdx + 1) / days.length) * 100}%"></div>` : ''}
+                ${days.map((d, i) => {
+                  const xPct = ((i + 0.5) / days.length) * 100;
+                  const yHighPct = (scaleTemp(d.tempMax) / chartHeight) * 100;
+                  const yLowPct = (scaleTemp(d.tempMin) / chartHeight) * 100;
+                  return `<div class="data-point high${d.isHistorical ? ' historical' : ''}" style="left:${xPct}%;top:${yHighPct}%"></div><div class="data-point low${d.isHistorical ? ' historical' : ''}" style="left:${xPct}%;top:${yLowPct}%"></div>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="weather-details">
+              ${days.map((d, i) => `
+                <div class="weather-day${d.isHistorical ? ' historical' : ''}${i === lastHistoricalIdx ? ' divider' : ''}">
+                  <span class="score-badge ${d.quality}">${getQualityLabel(d.quality, currentActivity)}</span>
+                  <div class="weather-day-label">${d.date.split(' ')[0]}<br><span class="weather-day-num">${d.date.split(' ')[1]}</span></div>
+                  <img class="weather-icon" src="${getWeatherIcon(d.weatherCode, true)}" alt="">
+                  <div class="weather-temp"><span class="weather-high">${d.tempMax}°</span><span class="weather-low">${d.tempMin}°</span></div>
+                  <div class="weather-precip">${d.precip}%</div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="mobile-forecast">
+              ${days.map(d => `
+                <div class="mobile-day${d.isHistorical ? ' historical' : ''}">
+                  <span class="score-badge ${d.quality}">${getQualityLabel(d.quality, currentActivity)}</span>
+                  <div class="mobile-day-label">${d.date.split(' ')[0]}</div>
+                  <div class="mobile-day-num">${d.date.split(' ')[1]}</div>
+                  <img class="mobile-icon" src="${getWeatherIcon(d.weatherCode, true)}" alt="">
+                  <div class="mobile-temps"><span class="high">${d.tempMax}°</span><span class="low">${d.tempMin}°</span></div>
+                  <div class="mobile-precip">${d.precip}%</div>
+                  ${d.snow >= 0.25 ? `<div class="mobile-snow">${(d.snow / 2.54).toFixed(1)}"</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="hourly-view" data-resort="${resort.slug}" style="display: none;">
+            <div class="text-center py-4 text-muted"><div class="loading-spinner"></div><small>Loading hourly...</small></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderHourlyChart(resort, data) {
+    const hourly = data.hourly;
+    const daily = data.daily;
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    const sunTimes = {};
+    daily.time.forEach((date, i) => {
+      sunTimes[date] = { sunrise: daily.sunrise[i], sunset: daily.sunset[i] };
+    });
+    
+    const now = new Date();
+    const hours = hourly.time.map((t, i) => {
+      const hourDate = new Date(t);
+      const dateStr = t.split('T')[0];
+      const sun = sunTimes[dateStr] || {};
+      const daylightFlag = sun.sunrise && sun.sunset ? isDaylight(t, sun.sunrise, sun.sunset) : true;
+      
+      return {
+        time: t, hourNum: hourDate.getHours(), dayName: dayNames[hourDate.getDay()],
+        dayNum: hourDate.getDate(), temp: Math.round(hourly.temperature_2m[i]),
+        precip: hourly.precipitation_probability[i], snow: hourly.snowfall[i],
+        weatherCode: hourly.weather_code[i],
+        wind: Math.round(hourly.wind_speed_10m?.[i] || 0),
+        gusts: Math.round(hourly.wind_gusts_10m?.[i] || 0),
+        daylight: daylightFlag, isHistorical: hourDate < now, isNewDay: hourDate.getHours() === 0
+      };
+    });
+    
+    let displayHours = hours;
+    if (currentActivity === 'dogwalk') {
+      const cutoff = Date.now() + 24 * 60 * 60 * 1000;
+      displayHours = hours.filter(h => new Date(h.time).getTime() <= cutoff);
+    }
+    
+    displayHours.forEach((h, i) => {
+      if (currentActivity === 'dogwalk') {
+        h.quality = calculateDogWalkQuality(displayHours, i);
+      } else {
+        h.quality = h.daylight ? calculateHourlySkiingQuality(displayHours, i) : 'night';
+      }
+    });
+    
+    const allTemps = displayHours.map(h => h.temp);
+    const yMin = Math.floor((Math.min(...allTemps) - 5) / 5) * 5;
+    const yMax = Math.ceil((Math.max(...allTemps) + 5) / 5) * 5;
+    const chartHeight = 200, hourWidth = 36, chartWidth = displayHours.length * hourWidth;
+    
+    const scaleTemp = (temp) => chartHeight - ((temp - yMin) / (yMax - yMin)) * chartHeight;
+    const scalePrecip = (precip) => chartHeight - (precip / 100) * chartHeight;
+    
+    const tempPoints = displayHours.map((h, i) => `${(i + 0.5) * hourWidth},${scaleTemp(h.temp)}`);
+    const precipPoints = displayHours.map((h, i) => `${(i + 0.5) * hourWidth},${scalePrecip(h.precip)}`);
+    const showFreezing = yMin <= 32 && yMax >= 32;
+    const freezingY = showFreezing ? scaleTemp(32) : 0;
+    
+    const yLabels = [];
+    const yStep = Math.ceil((yMax - yMin) / 5 / 5) * 5;
+    for (let t = yMax; t >= yMin; t -= yStep) yLabels.push(`${t}°`);
+
+    return `
+      <div class="hourly-y-axis"><div class="y-axis" style="position:relative; height:100%;">${yLabels.map(l => `<span class="y-label">${l}</span>`).join('')}</div></div>
+      <div class="hourly-container">
+        <div class="hourly-precip-totals">${displayHours.map(h => `<div class="hourly-precip-slot${h.isHistorical ? ' historical' : ''}">${h.snow >= 0.1 ? `<span class="snow-total">${(h.snow / 2.54).toFixed(1)}"</span>` : ''}</div>`).join('')}</div>
+        <div class="hourly-chart-wrapper">
+          <div class="hourly-chart">${displayHours.map((h, i) => {
+            const lastHist = h.isHistorical && (i === displayHours.length - 1 || !displayHours[i + 1].isHistorical);
+            return `<div class="hour-band ${h.quality}${h.isHistorical ? ' historical' : ''}${h.isNewDay && i > 0 ? ' day-start' : ''}${lastHist ? ' history-end' : ''}"></div>`;
+          }).join('')}</div>
+          <div class="hourly-lines">
+            <svg viewBox="0 0 ${chartWidth} ${chartHeight}" preserveAspectRatio="none" style="width:${chartWidth}px; height:${chartHeight}px;">
+              ${showFreezing ? `<line class="freezing-line" x1="0" y1="${freezingY}" x2="${chartWidth}" y2="${freezingY}" vector-effect="non-scaling-stroke"/>` : ''}
+              <polyline class="precip-line" points="${precipPoints.join(' ')}" vector-effect="non-scaling-stroke"/>
+              <polyline class="temp-line-high" points="${tempPoints.join(' ')}" vector-effect="non-scaling-stroke"/>
+            </svg>
+          </div>
+        </div>
+        <div class="hourly-details">${displayHours.map((h, i) => {
+          const lastHist = h.isHistorical && (i === displayHours.length - 1 || !displayHours[i + 1].isHistorical);
+          const hourLabel = h.hourNum === 0 ? '12a' : h.hourNum === 12 ? '12p' : h.hourNum > 12 ? (h.hourNum - 12) + 'p' : h.hourNum + 'a';
+          return `
+            <div class="hour-detail${h.isHistorical ? ' historical' : ''}${h.isNewDay && i > 0 ? ' day-start' : ''}${lastHist ? ' history-end' : ''}">
+              ${h.isNewDay || i === 0 ? `<div class="hour-day-label">${h.dayName}</div>` : '<div class="hour-day-label">&nbsp;</div>'}
+              <div class="hour-label">${hourLabel}</div>
+              <img class="hour-icon" src="${getWeatherIcon(h.weatherCode, h.daylight)}" alt="">
+              <div class="hour-temp" style="color: #ef4444;">${h.temp}°</div>
+              <div class="hour-precip">${h.precip}%</div>
+              ${currentActivity === 'dogwalk' ? `<div class="hour-wind">${h.wind}<span class="wind-unit">mph</span></div>` : ''}
+              <div class="hour-quality ${h.quality}"></div>
+            </div>
+          `;
+        }).join('')}</div>
+      </div>
+    `;
+  }
+
+  // ============ APP STATE ============
+  let currentActivity = loadActivity();
+  let resorts = loadLocations(currentActivity);
+  let cachedWeatherData = {};
+  let cachedHourlyData = {};
+  let lastUpdated = Date.now();
+
+  // ============ APP FUNCTIONS ============
+  function setActivity(activity) {
+    currentActivity = activity;
+    saveActivity(activity);
+    document.querySelectorAll('.activity-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.activity === activity);
+    });
+    updateTagline();
+    cachedWeatherData = {};
+    cachedHourlyData = {};
+    
+    if (activity === 'dogwalk') {
+      initDogWalkLocation().then(locs => {
+        resorts = locs;
+        renderNav();
+        renderEditList();
+        loadAllResorts(false);
+      });
+    } else {
+      resorts = loadLocations(activity);
+      renderNav();
+      renderEditList();
+      loadAllResorts(false);
+    }
+  }
+
+  function updateTagline() {
+    const tagline = document.getElementById('tagline');
+    if (!tagline) return;
+    const taglines = {
+      skiing: 'Plan your next day skiing',
+      dogwalk: 'Plan your next dog walk'
+    };
+    tagline.textContent = taglines[currentActivity] || 'Plan your next adventure';
+  }
+
+  function renderNav() {
+    const nav = document.getElementById('resortNav');
+    nav.innerHTML = resorts.map(r => `<a class="resort-link" href="#${r.slug}">${r.name}</a>`).join('');
+    const label = document.getElementById('locationsLabel');
+    if (label) label.textContent = currentActivity === 'skiing' ? 'My Resorts:' : 'My Locations:';
+  }
+
+  function renderEditList() {
+    const list = document.getElementById('resortList');
+    const isSkiing = currentActivity === 'skiing';
+    const itemLabel = isSkiing ? 'resort' : 'location';
+    
+    list.innerHTML = resorts.map((r, i) => `
+      <div class="d-flex align-items-center gap-2 p-2 bg-light rounded mb-2">
+        <div class="flex-grow-1">
+          <div class="small">${r.name}</div>
+          <div class="text-muted" style="font-size: 0.7rem;">${r.location || `${r.lat.toFixed(2)}, ${r.lon.toFixed(2)}`}</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary py-0 px-1" onclick="app.moveResort(${i}, -1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="btn btn-sm btn-outline-secondary py-0 px-1" onclick="app.moveResort(${i}, 1)" ${i === resorts.length - 1 ? 'disabled' : ''}>↓</button>
+        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="app.removeResort(${i})">✕</button>
+      </div>
+    `).join('');
+
+    const editHeader = document.getElementById('editHeader');
+    if (editHeader) editHeader.textContent = isSkiing ? 'Manage Resorts (max 10)' : 'Manage Locations (max 10)';
+
+    const addSection = document.getElementById('addResortSection');
+    if (resorts.length >= MAX_LOCATIONS) {
+      addSection.innerHTML = `<p class="text-muted small text-center mb-0">Maximum of 10 ${itemLabel}s reached.</p>`;
+    } else {
+      const placeholder = isSkiing ? 'Resort name or nearby town...' : 'Address, city, or place name...';
+      const tip = isSkiing ? 'Tip: Search by exact resort name or nearest town' : 'Tip: Search by city name, address, or landmark';
+      addSection.innerHTML = `
+        <h6 class="text-muted small">Add a ${itemLabel}</h6>
+        <div class="input-group input-group-sm mb-2">
+          <input type="text" class="form-control" id="searchInput" placeholder="${placeholder}">
+          <button class="btn btn-primary" type="button" id="searchBtn">Search</button>
+        </div>
+        <div class="text-muted" style="font-size: 0.65rem; margin-top: -4px; margin-bottom: 8px;">${tip}</div>
+        <div id="searchResults"></div>
+      `;
+      document.getElementById('searchBtn').addEventListener('click', doSearch);
+      document.getElementById('searchInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') doSearch(); });
+    }
+  }
+
+  function moveResort(index, direction) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= resorts.length) return;
+    [resorts[index], resorts[newIndex]] = [resorts[newIndex], resorts[index]];
+    saveLocations(currentActivity, resorts);
+    renderNav(); renderEditList(); loadAllResorts();
+  }
+
+  function removeResort(index) {
+    resorts.splice(index, 1);
+    saveLocations(currentActivity, resorts);
+    renderNav(); renderEditList(); loadAllResorts();
+  }
+
+  function addResort(resort) {
+    if (resorts.length >= MAX_LOCATIONS) return;
+    if (resorts.some(r => Math.abs(r.lat - resort.lat) < 0.01 && Math.abs(r.lon - resort.lon) < 0.01)) {
+      alert('This location is already in your list.');
+      return;
+    }
+    resorts.push(resort);
+    saveLocations(currentActivity, resorts);
+    renderNav(); renderEditList(); loadAllResorts();
+    const results = document.getElementById('searchResults');
+    if (results) results.innerHTML = '';
+  }
+
+  async function doSearch() {
+    const input = document.getElementById('searchInput');
+    const resultsDiv = document.getElementById('searchResults');
+    const query = input.value.trim();
+    if (!query) return;
+    
+    resultsDiv.innerHTML = '<p class="text-muted small">Searching...</p>';
+    try {
+      const results = await searchLocations(query);
+      if (results.length === 0) {
+        resultsDiv.innerHTML = '<p class="text-muted small">No results found.</p>';
+        return;
+      }
+      resultsDiv.innerHTML = results.map(r => {
+        const slug = r.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const alreadyAdded = resorts.some(res => Math.abs(res.lat - r.latitude) < 0.01 && Math.abs(res.lon - r.longitude) < 0.01);
+        const timezone = r.timezone || 'America/New_York';
+        const location = [r.admin1, r.country].filter(Boolean).join(', ');
+        return `
+          <div class="search-result p-2 bg-light rounded mb-2 small">
+            <div><div>${r.name}</div><div class="text-muted smaller">${r.admin1 || ''} ${r.country || ''} · ${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}</div></div>
+            <button class="btn btn-sm btn-success py-0 px-2" ${alreadyAdded || resorts.length >= MAX_LOCATIONS ? 'disabled' : ''} 
+              onclick='app.addResort(${JSON.stringify({ slug, name: r.name, lat: r.latitude, lon: r.longitude, timezone, location })})'>${alreadyAdded ? 'Added' : 'Add'}</button>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      resultsDiv.innerHTML = '<p class="text-danger small">Search failed. Please try again.</p>';
+    }
+  }
+
+  async function loadAllResorts(useCache = false) {
+    const container = document.getElementById('chartsContainer');
+    if (!useCache) {
+      container.innerHTML = `<div class="col-12 text-center py-5"><div class="loading-spinner"></div><p class="text-muted">Loading forecasts...</p></div>`;
+      cachedWeatherData = {};
+      cachedHourlyData = {};
+    }
+    
+    if (resorts.length === 0) {
+      container.innerHTML = currentActivity === 'dogwalk' 
+        ? `<div class="col-12 text-center py-5"><h5 class="text-muted">🐕 No locations set</h5><p class="text-muted">Allow location access or add a location manually.</p></div>`
+        : `<div class="col-12 text-center py-5"><h5 class="text-muted">🎿 No resorts added</h5><p class="text-muted">Add ski resorts using "Edit" above.</p></div>`;
+      return;
+    }
+
+    const charts = [];
+    for (const resort of resorts) {
+      try {
+        let data = useCache && cachedWeatherData[resort.slug] ? cachedWeatherData[resort.slug] : await fetchForecast(resort);
+        cachedWeatherData[resort.slug] = data;
+        charts.push(renderChart(resort, data));
+      } catch (err) {
+        console.error(`Failed to load ${resort.name}:`, err);
+        charts.push(`<div class="col-12"><div class="chart-card" id="${resort.slug}"><div class="alert alert-danger mb-0">⚠️ Failed to load ${resort.name} forecast</div></div></div>`);
+      }
+    }
+
+    container.innerHTML = charts.join('');
+    attachToggleListeners();
+    
+    if (currentActivity === 'dogwalk') {
+      for (const resort of resorts) {
+        const card = document.getElementById(resort.slug);
+        if (!card) continue;
+        const dailyView = card.querySelector('.daily-view');
+        const hourlyView = card.querySelector('.hourly-view');
+        card.querySelectorAll('.view-toggle-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === 'hourly'));
+        if (dailyView) dailyView.style.display = 'none';
+        if (hourlyView) hourlyView.style.display = 'block';
+        
+        try {
+          let hourlyData = useCache && cachedHourlyData[resort.slug] ? cachedHourlyData[resort.slug] : await fetchHourlyForecast(resort);
+          cachedHourlyData[resort.slug] = hourlyData;
+          hourlyView.innerHTML = renderHourlyChart(resort, hourlyData);
+        } catch (err) {
+          hourlyView.innerHTML = '<div class="alert alert-danger mb-0">⚠️ Failed to load forecast</div>';
+        }
+      }
+    }
+  }
+
+  function attachToggleListeners() {
+    document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const view = e.target.dataset.view;
+        const resortSlug = e.target.dataset.resort;
+        const card = document.getElementById(resortSlug);
+        card.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        const dailyView = card.querySelector('.daily-view');
+        const hourlyView = card.querySelector('.hourly-view');
+        
+        if (view === 'daily') {
+          dailyView.style.display = 'block';
+          hourlyView.style.display = 'none';
+        } else {
+          dailyView.style.display = 'none';
+          hourlyView.style.display = 'block';
+          const resort = resorts.find(r => r.slug === resortSlug);
+          if (resort && !cachedHourlyData[resortSlug]) {
+            try {
+              const data = await fetchHourlyForecast(resort);
+              cachedHourlyData[resortSlug] = data;
+              hourlyView.innerHTML = renderHourlyChart(resort, data);
+            } catch (err) {
+              hourlyView.innerHTML = '<div class="alert alert-danger mb-0">⚠️ Failed to load hourly data</div>';
+            }
+          } else if (cachedHourlyData[resortSlug]) {
+            hourlyView.innerHTML = renderHourlyChart(resort, cachedHourlyData[resortSlug]);
+          }
+        }
+      });
+    });
+
+    document.querySelectorAll('.debug-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const resortSlug = e.target.dataset.resort;
+        const resort = resorts.find(r => r.slug === resortSlug);
+        const debugData = { resort, daily: cachedWeatherData[resortSlug], hourly: cachedHourlyData[resortSlug] };
+        try {
+          await navigator.clipboard.writeText(JSON.stringify(debugData, null, 2));
+          e.target.textContent = '✓';
+          setTimeout(() => { e.target.textContent = '{ }'; }, 1500);
+        } catch (err) {
+          console.log('API Data:', debugData);
+        }
+      });
+    });
+  }
+
+  function updateLastUpdatedDisplay() {
+    const el = document.getElementById('lastUpdated');
+    if (!el) return;
+    const mins = Math.floor((Date.now() - lastUpdated) / 60000);
+    el.textContent = mins < 1 ? 'Updated just now' : mins === 1 ? 'Updated 1 min ago' : `Updated ${mins} min ago`;
+  }
+
+  function manualRefresh() {
+    const btns = [document.getElementById('refreshBtn'), document.getElementById('refreshBtnMobile')];
+    btns.forEach(btn => { if (btn) { btn.disabled = true; btn.classList.add('spinning'); } });
+    loadAllResorts(false).then(() => {
+      lastUpdated = Date.now();
+      updateLastUpdatedDisplay();
+      btns.forEach(btn => { if (btn) { btn.disabled = false; btn.classList.remove('spinning'); } });
+    });
+  }
+
+  async function init() {
+    console.log('WeatherPlanner initializing...');
+    try {
+      document.querySelectorAll('.activity-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.activity === currentActivity);
+      });
+      updateTagline();
+      
+      if (currentActivity === 'dogwalk') {
+        resorts = await initDogWalkLocation();
+      } else {
+        resorts = loadLocations(currentActivity);
+      }
+      
+      console.log('Loaded resorts:', resorts);
+      
+      renderNav();
+      renderEditList();
+      await loadAllResorts();
+      
+      console.log('WeatherPlanner initialized successfully');
+      
+      setInterval(updateLastUpdatedDisplay, 60000);
+      setInterval(() => { loadAllResorts(false).then(() => { lastUpdated = Date.now(); updateLastUpdatedDisplay(); }); }, REFRESH_INTERVAL);
+      
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && Date.now() - lastUpdated > STALE_THRESHOLD) {
+          loadAllResorts(false).then(() => { lastUpdated = Date.now(); updateLastUpdatedDisplay(); });
+        }
+      });
+      
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => loadAllResorts(true), 250);
+      });
+    } catch (err) {
+      console.error('WeatherPlanner init error:', err);
+      document.getElementById('chartsContainer').innerHTML = `<div class="col-12"><div class="alert alert-danger">Error initializing: ${err.message}</div></div>`;
+    }
+  }
+
+  // Expose to global scope
+  window.app = { setActivity, moveResort, removeResort, addResort, manualRefresh, init };
+  
+  // Auto-init when DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+  </script>
+</body>
+</html>
