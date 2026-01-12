@@ -847,6 +847,56 @@ body {
     font-weight: 600;
   }
 }
+
+/* Mobile landscape - reduce chart height to prevent overflow */
+@media (max-height: 500px) and (orientation: landscape) {
+  .chart {
+    height: 120px;
+  }
+
+  .hourly-chart {
+    height: 120px;
+  }
+
+  .hourly-chart-wrapper {
+    height: 120px;
+  }
+
+  .hourly-y-axis {
+    height: 120px;
+  }
+
+  .chart-card {
+    padding: 12px;
+  }
+
+  .chart-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .weather-details {
+    padding-top: 0.5rem;
+  }
+
+  .weather-icon {
+    width: 24px;
+    height: 24px;
+    margin: -4px auto -2px;
+  }
+
+  .weather-temp {
+    font-size: 0.6rem;
+  }
+
+  .weather-precip {
+    font-size: 0.55rem;
+  }
+
+  .score-badge {
+    font-size: 0.5rem;
+    padding: 1px 4px;
+  }
+}
   </style>
 </head>
 <body>
