@@ -1,4 +1,4 @@
-// WeatherPlanner v0.6.1 - Main Application
+// WeatherPlanner v0.7.0 - Main Application
 
 import { MAX_LOCATIONS, REFRESH_INTERVAL, STALE_THRESHOLD } from './config.js';
 import { loadLocations, saveLocations, loadActivity, saveActivity, initDogWalkLocation } from './storage.js';
