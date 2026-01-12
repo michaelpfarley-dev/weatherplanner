@@ -877,7 +877,7 @@ body {
         </div>
       </div>
     </div>
-    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.6.0</div>
+    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.6.1</div>
 
     <div class="locations-bar d-flex flex-wrap align-items-center gap-2 mb-3">
       <span id="locationsLabel" class="text-muted small">My Resorts:</span>
@@ -1244,8 +1244,8 @@ body {
     if (recentRain && temp <= 32) return 'icy';
     if (recentRain && temp > 32 && temp < 37) return 'icy';
     if (recentRain && temp >= 37) return 'fair';
-    if (isDry && temp >= 15 && temp <= 32 && precip <= 20) return 'good';
-    if (isDry && temp <= 28 && precip <= 40) return 'good';
+    if (isDry && temp >= 15 && temp < 40 && precip <= 20) return 'good';
+    if (isDry && temp < 40 && precip <= 40) return 'good';
     if (!isSnowing && temp >= 28 && temp <= 35 && precip > 40) return 'icy';
     if (isDry && precip <= 30) return 'fair';
     if (temp <= 40 && precip <= 50) return 'fair';
