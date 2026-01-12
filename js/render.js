@@ -157,7 +157,7 @@ export function renderChart(resort, data, currentActivity) {
           </div>
           <div class="mobile-forecast">
             ${days.map(d => `
-              <div class="mobile-day${d.isHistorical ? ' historical' : ''}">
+              <div class="mobile-day${d.snow / 2.54 >= 1.95 ? ' heavy-snow' : ''}${d.isHistorical ? ' historical' : ''}">
                 <span class="score-badge ${d.quality}">${getQualityLabel(d.quality, currentActivity)}</span>
                 <div class="mobile-day-label">${d.date.split(' ')[0]}</div>
                 <div class="mobile-day-num">${d.date.split(' ')[1]}</div>

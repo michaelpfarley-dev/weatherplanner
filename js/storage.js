@@ -1,4 +1,4 @@
-// Storage and location management for WeatherPlanner
+// Storage and location management for GoWindow
 
 import { DEFAULT_LOCATIONS } from './config.js';
 

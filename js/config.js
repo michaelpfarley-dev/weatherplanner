@@ -1,13 +1,16 @@
-// Configuration constants for WeatherPlanner
+// Configuration constants for GoWindow
 
 export const DEFAULT_LOCATIONS = {
-  skiing: [
-    { slug: 'bristol-mountain', name: 'Bristol Mountain', lat: 42.73, lon: -77.40, timezone: 'America/New_York', location: 'Canandaigua, NY, USA' },
-    { slug: 'holiday-valley', name: 'Holiday Valley', lat: 42.27, lon: -78.67, timezone: 'America/New_York', location: 'Ellicottville, NY, USA' },
-    { slug: 'jay-peak', name: 'Jay Peak', lat: 44.94, lon: -72.53, timezone: 'America/New_York', location: 'Jay, VT, USA' }
-  ],
+  skiing: [],
   dogwalk: []
 };
+
+export const SUGGESTED_RESORTS = [
+  { slug: 'whistler-blackcomb', name: 'Whistler Blackcomb', lat: 50.12, lon: -122.95, timezone: 'America/Vancouver', location: 'Whistler, BC, Canada' },
+  { slug: 'vail', name: 'Vail', lat: 39.64, lon: -106.37, timezone: 'America/Denver', location: 'Vail, CO, USA' },
+  { slug: 'holiday-valley', name: 'Holiday Valley', lat: 42.27, lon: -78.67, timezone: 'America/New_York', location: 'Ellicottville, NY, USA' },
+  { slug: 'stowe', name: 'Stowe', lat: 44.53, lon: -72.78, timezone: 'America/New_York', location: 'Stowe, VT, USA' }
+];
 
 export const MAX_LOCATIONS = 10;
 export const REFRESH_INTERVAL = 30 * 60 * 1000;

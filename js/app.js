@@ -1,6 +1,6 @@
-// GoWindow v0.21.0 - Main Application
+// GoWindow v0.23.0 - Main Application
 
-import { MAX_LOCATIONS, REFRESH_INTERVAL, STALE_THRESHOLD } from './config.js';
+import { MAX_LOCATIONS, REFRESH_INTERVAL, STALE_THRESHOLD, SUGGESTED_RESORTS } from './config.js';
 import { loadLocations, saveLocations, loadActivity, saveActivity, initDogWalkLocation } from './storage.js';
 import { fetchForecast, fetchHourlyForecast, searchLocations } from './api.js';
 import { renderChart, renderHourlyChart } from './render.js';
@@ -124,6 +124,12 @@ function addResort(resort) {
   if (results) results.innerHTML = '';
 }
 
+function addSuggestedResort(resort) {
+  resorts.push(resort);
+  saveLocations(currentActivity, resorts);
+  renderNav(); renderEditList(); loadAllResorts();
+}
+
 async function doSearch() {
   const input = document.getElementById('searchInput');
   const resultsDiv = document.getElementById('searchResults');
@@ -165,9 +171,24 @@ async function loadAllResorts(useCache = false) {
   }
 
   if (resorts.length === 0) {
-    container.innerHTML = currentActivity === 'dogwalk'
-      ? `<div class="col-12 text-center py-5"><h5 class="text-muted">🐕 No locations set</h5><p class="text-muted">Allow location access or add a location manually.</p></div>`
-      : `<div class="col-12 text-center py-5"><h5 class="text-muted">🎿 No resorts added</h5><p class="text-muted">Add ski resorts using "Edit" above.</p></div>`;
+    if (currentActivity === 'dogwalk') {
+      container.innerHTML = `<div class="col-12 text-center py-5"><h5 class="text-muted">🐕 No locations set</h5><p class="text-muted">Allow location access or add a location manually.</p></div>`;
+    } else {
+      container.innerHTML = `
+        <div class="col-12 text-center py-5">
+          <h5 class="text-muted mb-3">🎿 Get started with a popular resort</h5>
+          <div class="suggested-resorts d-flex flex-wrap justify-content-center gap-2 mb-4">
+            ${SUGGESTED_RESORTS.map(r => `
+              <button class="btn suggested-resort-btn" onclick='app.addSuggestedResort(${JSON.stringify(r)})'>
+                <span class="resort-name">${r.name}</span>
+                <span class="resort-location">${r.location}</span>
+              </button>
+            `).join('')}
+          </div>
+          <p class="text-muted small">Or use "Edit" above to search for any resort</p>
+        </div>
+      `;
+    }
     return;
   }
 
@@ -320,7 +341,7 @@ async function init() {
 }
 
 // Expose to global scope for onclick handlers
-window.app = { setActivity, moveResort, removeResort, addResort, manualRefresh, init };
+window.app = { setActivity, moveResort, removeResort, addResort, addSuggestedResort, manualRefresh, init };
 
 // Auto-init when DOM ready
 if (document.readyState === 'loading') {
