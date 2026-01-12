@@ -1,4 +1,4 @@
-// GoWindow v0.23.0 - Main Application
+// GoWindow v0.24.0 - Main Application
 
 import { MAX_LOCATIONS, REFRESH_INTERVAL, STALE_THRESHOLD, SUGGESTED_RESORTS } from './config.js';
 import { loadLocations, saveLocations, loadActivity, saveActivity, initDogWalkLocation } from './storage.js';
@@ -94,6 +94,14 @@ function renderEditList() {
     document.getElementById('searchBtn').addEventListener('click', doSearch);
     document.getElementById('searchInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') doSearch(); });
   }
+
+  // Add reset button if there are locations
+  if (resorts.length > 0) {
+    const resetDiv = document.createElement('div');
+    resetDiv.className = 'text-center mt-3 pt-3 border-top';
+    resetDiv.innerHTML = `<button class="btn btn-sm btn-outline-danger" onclick="app.resetLocations()">Reset All ${isSkiing ? 'Resorts' : 'Locations'}</button>`;
+    addSection.parentNode.appendChild(resetDiv);
+  }
 }
 
 // Resort Management
@@ -128,6 +136,16 @@ function addSuggestedResort(resort) {
   resorts.push(resort);
   saveLocations(currentActivity, resorts);
   renderNav(); renderEditList(); loadAllResorts();
+}
+
+function resetLocations() {
+  if (!confirm('Are you sure you want to remove all locations?')) return;
+  resorts = [];
+  saveLocations(currentActivity, resorts);
+  renderNav(); renderEditList(); loadAllResorts();
+  // Collapse the edit section
+  const editSection = document.getElementById('editSection');
+  if (editSection) bootstrap.Collapse.getInstance(editSection)?.hide();
 }
 
 async function doSearch() {
@@ -341,7 +359,7 @@ async function init() {
 }
 
 // Expose to global scope for onclick handlers
-window.app = { setActivity, moveResort, removeResort, addResort, addSuggestedResort, manualRefresh, init };
+window.app = { setActivity, moveResort, removeResort, addResort, addSuggestedResort, resetLocations, manualRefresh, init };
 
 // Auto-init when DOM ready
 if (document.readyState === 'loading') {
