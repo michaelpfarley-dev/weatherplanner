@@ -1,8 +1,8 @@
 :root {
-  --powder: rgba(59, 130, 246, 0.9);
+  --powder: #22c55e;
   --good: #22c55e;
-  --fair: #ca8a04;
-  --icy: #7c3aed;
+  --fair: #eab308;
+  --icy: #eab308;
   --nogo: #dc2626;
 }
 
@@ -132,10 +132,39 @@ body {
   border-right: 2px dashed #94a3b8;
 }
 
-.day-band.powder { background: rgba(59, 130, 246, 0.15); }
+.day-band.powder { background: rgba(34, 197, 94, 0.15); }
+.day-band.heavy-snow {
+  animation: snow-flash 1.5s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.day-band.heavy-snow::before {
+  content: '❄ ❄ ❄';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: white;
+  text-shadow: 0 0 2px rgba(59, 130, 246, 0.5);
+  animation: snowflake-fade 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes snow-flash {
+  0%, 100% { background: rgba(59, 130, 246, 0.15); }
+  50% { background: rgba(59, 130, 246, 0.35); }
+}
+
+@keyframes snowflake-fade {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.9; }
+}
 .day-band.good { background: rgba(34, 197, 94, 0.15); }
-.day-band.fair { background: rgba(202, 138, 4, 0.15); }
-.day-band.icy { background: rgba(124, 58, 237, 0.15); }
+.day-band.fair { background: rgba(234, 179, 8, 0.15); }
+.day-band.icy { background: rgba(234, 179, 8, 0.15); }
 .day-band.nogo { background: rgba(220, 38, 38, 0.15); }
 
 .y-axis {
@@ -172,7 +201,7 @@ body {
 
 .temp-line-high {
   fill: none;
-  stroke: #ef4444;
+  stroke: #f97316;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -189,10 +218,9 @@ body {
 .precip-line {
   fill: none;
   stroke: #8b5cf6;
-  stroke-width: 1.5;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 4, 3;
 }
 
 .freezing-line {
@@ -221,6 +249,16 @@ body {
 .data-point.high { background: #ef4444; }
 .data-point.low { background: #3b82f6; }
 .data-point.historical { opacity: 0.45; }
+
+.temp-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f97316;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
 
 .freezing-label {
   position: absolute;
@@ -337,7 +375,7 @@ body {
   display: inline-block;
 }
 
-.legend-line.temp-high { background: #ef4444; }
+.legend-line.temp-high { background: #f97316; }
 .legend-line.temp-low { background: #3b82f6; }
 .legend-line.precip {
   background: repeating-linear-gradient(
@@ -471,10 +509,10 @@ body {
 }
 
 .hour-band.night { background: #e5e7eb; }
-.hour-band.powder { background: rgba(59, 130, 246, 0.15); }
+.hour-band.powder { background: rgba(34, 197, 94, 0.15); }
 .hour-band.good { background: rgba(34, 197, 94, 0.15); }
-.hour-band.fair { background: rgba(202, 138, 4, 0.15); }
-.hour-band.icy { background: rgba(124, 58, 237, 0.15); }
+.hour-band.fair { background: rgba(234, 179, 8, 0.15); }
+.hour-band.icy { background: rgba(234, 179, 8, 0.15); }
 .hour-band.nogo { background: rgba(220, 38, 38, 0.15); }
 
 .hour-band.day-start {

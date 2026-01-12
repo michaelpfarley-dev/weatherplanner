@@ -1,4 +1,4 @@
-// Weather API functions for WeatherPlanner
+// Weather API functions for GoWindow
 
 export async function fetchForecast(resort) {
   const url = `https://api.open-meteo.com/v1/gfs?` +
@@ -34,20 +34,23 @@ export async function fetchForecast(resort) {
     if (hourTime < sunrise || hourTime > sunset) return;
 
     if (!dailyFromHourly[dateStr]) {
-      dailyFromHourly[dateStr] = { temps: [], precips: [], snowfall: 0, weatherCodes: [] };
+      dailyFromHourly[dateStr] = { temps: [], precips: [], snowfall: 0, weatherCodes: [], hourlyTemps: [], hourlyPrecips: [] };
     }
 
     dailyFromHourly[dateStr].temps.push(data.hourly.temperature_2m[i]);
     dailyFromHourly[dateStr].precips.push(data.hourly.precipitation_probability[i]);
     dailyFromHourly[dateStr].snowfall += data.hourly.snowfall[i] || 0;
     dailyFromHourly[dateStr].weatherCodes.push(data.hourly.weather_code[i]);
+    dailyFromHourly[dateStr].hourlyTemps.push(Math.round(data.hourly.temperature_2m[i]));
+    dailyFromHourly[dateStr].hourlyPrecips.push(data.hourly.precipitation_probability[i]);
   });
 
   const mergedDaily = {
     time: [], temperature_2m_max: [], temperature_2m_min: [],
     precipitation_probability_max: [], snowfall_sum: [], rain_sum: [],
     weather_code: [], daylight_temp_max: [], daylight_temp_min: [],
-    daylight_precip_max: [], daylight_snow_sum: [], daylight_weather_codes: []
+    daylight_precip_max: [], daylight_snow_sum: [], daylight_weather_codes: [],
+    daylight_hourly_temps: [], daylight_hourly_precips: []
   };
 
   data.daily.time.forEach((t, i) => {
@@ -66,12 +69,16 @@ export async function fetchForecast(resort) {
       mergedDaily.daylight_precip_max.push(Math.max(...dayData.precips));
       mergedDaily.daylight_snow_sum.push(dayData.snowfall);
       mergedDaily.daylight_weather_codes.push(dayData.weatherCodes);
+      mergedDaily.daylight_hourly_temps.push(dayData.hourlyTemps);
+      mergedDaily.daylight_hourly_precips.push(dayData.hourlyPrecips);
     } else {
       mergedDaily.daylight_temp_max.push(data.daily.temperature_2m_max[i]);
       mergedDaily.daylight_temp_min.push(data.daily.temperature_2m_min[i]);
       mergedDaily.daylight_precip_max.push(data.daily.precipitation_probability_max[i]);
       mergedDaily.daylight_snow_sum.push(data.daily.snowfall_sum[i]);
       mergedDaily.daylight_weather_codes.push([data.daily.weather_code[i]]);
+      mergedDaily.daylight_hourly_temps.push([Math.round(data.daily.temperature_2m_max[i])]);
+      mergedDaily.daylight_hourly_precips.push([data.daily.precipitation_probability_max[i]]);
     }
   });
 

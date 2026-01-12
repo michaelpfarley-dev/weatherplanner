@@ -1,4 +1,4 @@
-// WeatherPlanner v0.7.0 - Main Application
+// GoWindow v0.21.0 - Main Application
 
 import { MAX_LOCATIONS, REFRESH_INTERVAL, STALE_THRESHOLD } from './config.js';
 import { loadLocations, saveLocations, loadActivity, saveActivity, initDogWalkLocation } from './storage.js';
@@ -42,10 +42,10 @@ function updateTagline() {
   const tagline = document.getElementById('tagline');
   if (!tagline) return;
   const taglines = {
-    skiing: 'Plan your next day skiing',
-    dogwalk: 'Plan your next dog walk'
+    skiing: 'Find your skiing weather window.',
+    dogwalk: 'Find your dog walk weather window.'
   };
-  tagline.textContent = taglines[currentActivity] || 'Plan your next adventure';
+  tagline.textContent = taglines[currentActivity] || 'Find your weather window.';
 }
 
 // Navigation and Edit UI
@@ -278,7 +278,7 @@ function manualRefresh() {
 
 // Initialization
 async function init() {
-  console.log('WeatherPlanner initializing...');
+  console.log('GoWindow initializing...');
   try {
     document.querySelectorAll('.activity-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.activity === currentActivity);
@@ -297,7 +297,7 @@ async function init() {
     renderEditList();
     await loadAllResorts();
 
-    console.log('WeatherPlanner initialized successfully');
+    console.log('GoWindow initialized successfully');
 
     setInterval(updateLastUpdatedDisplay, 60000);
     setInterval(() => { loadAllResorts(false).then(() => { lastUpdated = Date.now(); updateLastUpdatedDisplay(); }); }, REFRESH_INTERVAL);
@@ -314,7 +314,7 @@ async function init() {
       resizeTimeout = setTimeout(() => loadAllResorts(true), 250);
     });
   } catch (err) {
-    console.error('WeatherPlanner init error:', err);
+    console.error('GoWindow init error:', err);
     document.getElementById('chartsContainer').innerHTML = `<div class="col-12"><div class="alert alert-danger">Error initializing: ${err.message}</div></div>`;
   }
 }

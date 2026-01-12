@@ -1,4 +1,4 @@
-// Rendering functions for WeatherPlanner
+// Rendering functions for GoWindow
 
 import { ICON_MAP } from './config.js';
 import { calculateSkiingQuality, calculateHourlySkiingQuality, calculateDogWalkQuality, getQualityLabel } from './scoring.js';
@@ -51,6 +51,8 @@ export function renderChart(resort, data, currentActivity) {
       daylightPrecipMax: daily.daylight_precip_max[i],
       daylightSnowSum: daily.daylight_snow_sum[i],
       daylightWeatherCodes: daily.daylight_weather_codes[i],
+      hourlyTemps: daily.daylight_hourly_temps[i] || [],
+      hourlyPrecips: daily.daylight_hourly_precips[i] || [],
       isHistorical: dayDate < today
     };
   });
@@ -61,9 +63,11 @@ export function renderChart(resort, data, currentActivity) {
 
   const days = getVisibleDays(allDays);
   const lastHistoricalIdx = days.reduce((acc, d, i) => d.isHistorical ? i : acc, -1);
-  const allTemps = days.flatMap(d => [d.tempMax, d.tempMin]);
-  const minTemp = Math.min(...allTemps);
-  const maxTemp = Math.max(...allTemps);
+
+  // Get all hourly temps for scaling
+  const allHourlyTemps = days.flatMap(d => d.hourlyTemps || [d.tempMax, d.tempMin]);
+  const minTemp = Math.min(...allHourlyTemps);
+  const maxTemp = Math.max(...allHourlyTemps);
   const yMin = Math.floor((minTemp - 5) / 5) * 5;
   const yMax = Math.ceil((maxTemp + 5) / 5) * 5;
   const chartHeight = 200;
@@ -72,9 +76,33 @@ export function renderChart(resort, data, currentActivity) {
   const scaleTemp = (temp) => chartHeight - ((temp - yMin) / (yMax - yMin)) * chartHeight;
   const scalePrecip = (precip) => chartHeight - (precip / 100) * chartHeight;
 
-  const tempHighPoints = days.map((d, i) => `${(i + 0.5) * dayWidth},${(scaleTemp(d.tempMax) / chartHeight) * 100}`);
-  const tempLowPoints = days.map((d, i) => `${(i + 0.5) * dayWidth},${(scaleTemp(d.tempMin) / chartHeight) * 100}`);
-  const precipPoints = days.map((d, i) => `${(i + 0.5) * dayWidth},${(scalePrecip(d.precip) / chartHeight) * 100}`);
+  // Build separate hourly temp lines for each day (daylight only)
+  const dailyTempData = days.map((d, dayIdx) => {
+    const temps = d.hourlyTemps || [d.tempMax];
+    const numTemps = temps.length;
+    const points = temps.map((temp, hourIdx) => {
+      const xPos = (dayIdx + (hourIdx + 0.5) / numTemps) * dayWidth;
+      const yPos = (scaleTemp(temp) / chartHeight) * 100;
+      return { x: xPos, y: yPos };
+    });
+    return {
+      line: points.map(p => `${p.x},${p.y}`).join(' '),
+      start: points[0],
+      end: points[points.length - 1]
+    };
+  });
+
+  // Build separate hourly precip lines for each day (daylight only)
+  const dailyPrecipData = days.map((d, dayIdx) => {
+    const precips = d.hourlyPrecips || [d.precip];
+    const numPrecips = precips.length;
+    const points = precips.map((precip, hourIdx) => {
+      const xPos = (dayIdx + (hourIdx + 0.5) / numPrecips) * dayWidth;
+      const yPos = (scalePrecip(precip) / chartHeight) * 100;
+      return `${xPos},${yPos}`;
+    });
+    return points.join(' ');
+  });
 
   const yLabels = [];
   const yStep = Math.ceil((yMax - yMin) / 5 / 5) * 5;
@@ -102,24 +130,18 @@ export function renderChart(resort, data, currentActivity) {
           </div>
           <div class="chart">
             <div class="y-axis">${yLabels.map(l => `<span class="y-label">${l}</span>`).join('')}</div>
-            <div class="chart-bands">${days.map((d, i) => `<div class="day-band ${d.quality}${d.isHistorical ? ' historical' : ''}${i === lastHistoricalIdx ? ' divider' : ''}"></div>`).join('')}</div>
+            <div class="chart-bands">${days.map((d, i) => `<div class="day-band ${d.quality}${d.snow / 2.54 >= 1.95 ? ' heavy-snow' : ''}${d.isHistorical ? ' historical' : ''}${i === lastHistoricalIdx ? ' divider' : ''}"></div>`).join('')}</div>
             <div class="chart-lines">
               <svg viewBox="0 0 100 100" preserveAspectRatio="none">
                 ${yMin <= 32 && yMax >= 32 ? `<line class="freezing-line" x1="0" y1="${((yMax - 32) / (yMax - yMin)) * 100}" x2="100" y2="${((yMax - 32) / (yMax - yMin)) * 100}" vector-effect="non-scaling-stroke"/>` : ''}
-                <polyline class="precip-line" points="${precipPoints.join(' ')}" vector-effect="non-scaling-stroke"/>
-                <polyline class="temp-line-low" points="${tempLowPoints.join(' ')}" vector-effect="non-scaling-stroke"/>
-                <polyline class="temp-line-high" points="${tempHighPoints.join(' ')}" vector-effect="non-scaling-stroke"/>
+                ${dailyPrecipData.map(points => `<polyline class="precip-line" points="${points}" vector-effect="non-scaling-stroke"/>`).join('')}
+                ${dailyTempData.map(d => `<polyline class="temp-line-high" points="${d.line}" vector-effect="non-scaling-stroke"/>`).join('')}
               </svg>
             </div>
             <div class="data-points">
               ${yMin <= 32 && yMax >= 32 ? `<span class="freezing-label" style="top:${((yMax - 32) / (yMax - yMin)) * 100}%">32°F</span>` : ''}
               ${lastHistoricalIdx >= 0 ? `<div class="history-divider" style="left:${((lastHistoricalIdx + 1) / days.length) * 100}%"></div>` : ''}
-              ${days.map((d, i) => {
-                const xPct = ((i + 0.5) / days.length) * 100;
-                const yHighPct = (scaleTemp(d.tempMax) / chartHeight) * 100;
-                const yLowPct = (scaleTemp(d.tempMin) / chartHeight) * 100;
-                return `<div class="data-point high${d.isHistorical ? ' historical' : ''}" style="left:${xPct}%;top:${yHighPct}%"></div><div class="data-point low${d.isHistorical ? ' historical' : ''}" style="left:${xPct}%;top:${yLowPct}%"></div>`;
-              }).join('')}
+              ${dailyTempData.map(d => `<div class="temp-dot" style="left:${d.start.x}%;top:${d.start.y}%"></div><div class="temp-dot" style="left:${d.end.x}%;top:${d.end.y}%"></div>`).join('')}
             </div>
           </div>
           <div class="weather-details">

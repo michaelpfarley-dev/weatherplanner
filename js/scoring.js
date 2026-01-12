@@ -1,4 +1,4 @@
-// Quality scoring functions for WeatherPlanner
+// Quality scoring functions for GoWindow
 
 import { WEATHER_CODES } from './config.js';
 
@@ -126,9 +126,9 @@ export function calculateDogWalkQuality(hours, index) {
 
 export function getQualityLabel(quality, activity) {
   if (activity === 'dogwalk') {
-    const labels = { powder: 'Good', good: 'Good', fair: 'Fair', icy: 'Icy', nogo: 'No-Go', night: 'Night' };
+    const labels = { powder: 'Go!', good: 'Go!', fair: 'Fair', icy: 'Icy', nogo: 'No-Go', night: 'Night' };
     return labels[quality] || quality;
   }
-  const labels = { powder: 'Powder', good: 'Good', fair: 'Fair', icy: 'Icy', nogo: 'No-Go', night: 'Night' };
+  const labels = { powder: 'Go! ❄️', good: 'Go!', fair: 'Fair', icy: 'Icy', nogo: 'No-Go', night: 'Night' };
   return labels[quality] || quality;
 }
