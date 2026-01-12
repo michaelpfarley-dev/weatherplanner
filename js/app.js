@@ -1,4 +1,4 @@
-// GoWindow v0.24.0 - Main Application
+// GoWindow v0.26.0 - Main Application
 
 import { MAX_LOCATIONS, REFRESH_INTERVAL, STALE_THRESHOLD, SUGGESTED_RESORTS } from './config.js';
 import { loadLocations, saveLocations, loadActivity, saveActivity, initDogWalkLocation } from './storage.js';
@@ -188,6 +188,10 @@ async function loadAllResorts(useCache = false) {
     cachedHourlyData = {};
   }
 
+  // Show/hide legend based on whether we have locations
+  const legendBar = document.getElementById('legendBar');
+  if (legendBar) legendBar.style.display = resorts.length > 0 ? '' : 'none';
+
   if (resorts.length === 0) {
     if (currentActivity === 'dogwalk') {
       container.innerHTML = `<div class="col-12 text-center py-5"><h5 class="text-muted">🐕 No locations set</h5><p class="text-muted">Allow location access or add a location manually.</p></div>`;
@@ -203,7 +207,10 @@ async function loadAllResorts(useCache = false) {
               </button>
             `).join('')}
           </div>
-          <p class="text-muted small">Or use "Edit" above to search for any resort</p>
+          <div class="or-divider mb-3"><span>or</span></div>
+          <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
+            🔍 Search for a different location
+          </button>
         </div>
       `;
     }

@@ -39,7 +39,7 @@
         </div>
       </div>
     </div>
-    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.24.0</div>
+    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.27.0</div>
 
     <div class="locations-bar d-flex flex-wrap align-items-center gap-2 mb-3">
       <span id="locationsLabel" class="text-muted small">My Resorts:</span>
@@ -66,18 +66,33 @@
       </div>
     </div>
 
-    <div class="legend-bar mb-3">
-      <div class="legend-items">
-        <span><span class="legend-color powder"></span> Go! ❄️</span>
-        <span><span class="legend-color good"></span> Go!</span>
-        <span><span class="legend-color fair"></span> Fair</span>
-        <span><span class="legend-color icy"></span> Icy</span>
-        <span><span class="legend-color nogo"></span> No-Go</span>
-        <span><span class="legend-line temp-high"></span> Temp</span>
-        <span><span class="legend-line precip"></span> Precip %</span>
-        <span><span class="legend-line freezing"></span> 32°F</span>
-        <span><span class="legend-precip-box snow">x"</span> Snow</span>
-        <span><span class="legend-precip-box rain">x"</span> Rain</span>
+    <div class="legend-bar" id="legendBar">
+      <div class="legend-group">
+        <span class="legend-group-label">Conditions</span>
+        <div class="legend-items">
+          <span><span class="legend-color powder"></span> Go! ❄️</span>
+          <span><span class="legend-color good"></span> Go!</span>
+          <span><span class="legend-color fair"></span> Fair</span>
+          <span><span class="legend-color icy"></span> Icy</span>
+          <span><span class="legend-color nogo"></span> No-Go</span>
+        </div>
+      </div>
+      <div class="legend-divider"></div>
+      <div class="legend-group">
+        <span class="legend-group-label">Chart</span>
+        <div class="legend-items">
+          <span><span class="legend-line temp-high"></span> Temp</span>
+          <span><span class="legend-line precip"></span> Precip</span>
+          <span><span class="legend-line freezing"></span> 32°F</span>
+        </div>
+      </div>
+      <div class="legend-divider"></div>
+      <div class="legend-group">
+        <span class="legend-group-label">Totals</span>
+        <div class="legend-items">
+          <span><span class="legend-precip-box snow">x"</span> Snow</span>
+          <span><span class="legend-precip-box rain">x"</span> Rain</span>
+        </div>
       </div>
     </div>
 

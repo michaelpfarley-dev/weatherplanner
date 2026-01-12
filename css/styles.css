@@ -378,13 +378,7 @@ body {
 .legend-line.temp-high { background: #f97316; }
 .legend-line.temp-low { background: #3b82f6; }
 .legend-line.precip {
-  background: repeating-linear-gradient(
-    90deg,
-    #8b5cf6 0px,
-    #8b5cf6 4px,
-    transparent 4px,
-    transparent 7px
-  );
+  background: #8b5cf6;
 }
 .legend-line.freezing {
   background: repeating-linear-gradient(
@@ -407,6 +401,83 @@ body {
 
 .legend-precip-box.snow { background: rgba(59, 130, 246, 0.9); }
 .legend-precip-box.rain { background: #22c55e; }
+
+/* Legend bar */
+.legend-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+}
+
+.legend-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-group-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.legend-items {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.legend-items > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.legend-divider {
+  width: 1px;
+  height: 36px;
+  background: #e2e8f0;
+}
+
+@media (max-width: 767px) {
+  .legend-bar {
+    padding: 8px 12px;
+    gap: 12px;
+  }
+
+  .legend-items {
+    gap: 6px;
+    font-size: 0.65rem;
+  }
+
+  .legend-divider {
+    height: 28px;
+  }
+
+  .legend-group-label {
+    font-size: 0.55rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .legend-bar {
+    display: none;
+  }
+}
 
 /* Toggle buttons */
 .view-toggle {
@@ -703,6 +774,22 @@ body {
   font-size: 0.7rem;
   color: #64748b;
   margin-top: 2px;
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+  margin: 0 12px;
 }
 
 .loading-spinner {
