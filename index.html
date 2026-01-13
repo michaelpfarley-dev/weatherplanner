@@ -39,7 +39,7 @@
         </div>
       </div>
     </div>
-    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.27.0</div>
+    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.28.21</div>
 
     <div class="locations-bar d-flex flex-wrap align-items-center gap-2 mb-3">
       <span id="locationsLabel" class="text-muted small">My Resorts:</span>
@@ -78,9 +78,9 @@
         </div>
       </div>
       <div class="legend-divider"></div>
-      <div class="legend-group">
+      <div class="legend-group" id="chartLegendGroup">
         <span class="legend-group-label">Chart</span>
-        <div class="legend-items">
+        <div class="legend-items" id="chartLegendItems">
           <span><span class="legend-line temp-high"></span> Temp</span>
           <span><span class="legend-line precip"></span> Precip</span>
           <span><span class="legend-line freezing"></span> 32°F</span>
@@ -92,6 +92,14 @@
         <div class="legend-items">
           <span><span class="legend-precip-box snow">x"</span> Snow</span>
           <span><span class="legend-precip-box rain">x"</span> Rain</span>
+        </div>
+      </div>
+      <div class="legend-divider"></div>
+      <div class="legend-group">
+        <span class="legend-group-label">View</span>
+        <div class="chart-mode-toggle" id="chartModeToggle">
+          <button class="chart-mode-btn active" data-mode="simple" onclick="app.setChartMode('simple')">Simple</button>
+          <button class="chart-mode-btn" data-mode="detailed" onclick="app.setChartMode('detailed')">Detailed 🤓</button>
         </div>
       </div>
     </div>

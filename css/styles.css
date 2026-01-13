@@ -139,18 +139,17 @@ body {
   overflow: hidden;
 }
 
-.day-band.heavy-snow::before {
-  content: '❄ ❄ ❄';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.8rem;
-  letter-spacing: 2px;
-  color: white;
-  text-shadow: 0 0 2px rgba(59, 130, 246, 0.5);
+.snow-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.snow-flakes {
+  font-size: 1rem;
+  color: #3b82f6;
+  text-shadow: 0 0 3px #93c5fd;
   animation: snowflake-fade 1.5s ease-in-out infinite;
-  pointer-events: none;
 }
 
 @keyframes snow-flash {
@@ -262,11 +261,13 @@ body {
 
 .freezing-label {
   position: absolute;
-  left: 4px;
-  font-size: 0.55rem;
+  left: -40px;
+  width: 34px;
+  font-size: 0.6rem;
   color: #0ea5e9;
-  font-weight: 500;
-  transform: translateY(-50%);
+  text-align: right;
+  line-height: 1;
+  margin-top: -0.3em;
 }
 
 .history-divider {
@@ -477,6 +478,61 @@ body {
   .legend-bar {
     display: none;
   }
+}
+
+/* Chart mode toggle */
+.chart-mode-toggle {
+  display: flex;
+  gap: 2px;
+  background: #f1f5f9;
+  padding: 2px;
+  border-radius: 5px;
+}
+
+.chart-mode-btn {
+  padding: 3px 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.65rem;
+  font-weight: 500;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.chart-mode-btn:hover {
+  color: #334155;
+}
+
+.chart-mode-btn.active {
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Legend bar icon for simple view */
+.legend-bar-icon {
+  display: inline-block;
+  width: 6px;
+  height: 14px;
+  background: linear-gradient(to bottom, #ef4444 0%, #ef4444 25%, #d1d5db 25%, #d1d5db 75%, #3b82f6 75%, #3b82f6 100%);
+  border-radius: 2px 2px 2px 2px;
+  vertical-align: middle;
+}
+
+/* Temp range bars for simple chart view */
+.temp-bar-high {
+  fill: #ef4444;
+}
+
+.temp-bar-middle {
+  fill: #d1d5db;
+}
+
+.temp-bar-low {
+  fill: #3b82f6;
 }
 
 /* Toggle buttons */

@@ -38,6 +38,14 @@ export function saveActivity(activity) {
   localStorage.setItem('weatherplanner-activity', activity);
 }
 
+export function loadChartMode() {
+  return localStorage.getItem('weatherplanner-chart-mode') || 'simple';
+}
+
+export function saveChartMode(mode) {
+  localStorage.setItem('weatherplanner-chart-mode', mode);
+}
+
 export async function getUserLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {

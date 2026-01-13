@@ -1,12 +1,13 @@
-// GoWindow v0.26.0 - Main Application
+// GoWindow v0.28.0 - Main Application
 
 import { MAX_LOCATIONS, REFRESH_INTERVAL, STALE_THRESHOLD, SUGGESTED_RESORTS } from './config.js';
-import { loadLocations, saveLocations, loadActivity, saveActivity, initDogWalkLocation } from './storage.js';
+import { loadLocations, saveLocations, loadActivity, saveActivity, loadChartMode, saveChartMode, initDogWalkLocation } from './storage.js';
 import { fetchForecast, fetchHourlyForecast, searchLocations } from './api.js';
 import { renderChart, renderHourlyChart } from './render.js';
 
 // App State
 let currentActivity = loadActivity();
+let currentChartMode = loadChartMode();
 let resorts = loadLocations(currentActivity);
 let cachedWeatherData = {};
 let cachedHourlyData = {};
@@ -46,6 +47,34 @@ function updateTagline() {
     dogwalk: 'Find your dog walk weather window.'
   };
   tagline.textContent = taglines[currentActivity] || 'Find your weather window.';
+}
+
+// Chart Mode Management
+function setChartMode(mode) {
+  currentChartMode = mode;
+  saveChartMode(mode);
+  document.querySelectorAll('.chart-mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+  updateChartLegend();
+  loadAllResorts(true);
+}
+
+function updateChartLegend() {
+  const legendItems = document.getElementById('chartLegendItems');
+  if (!legendItems) return;
+  if (currentChartMode === 'simple') {
+    legendItems.innerHTML = `
+      <span><span class="legend-bar-icon"></span> Hi/Lo</span>
+      <span><span class="legend-line freezing"></span> 32°F</span>
+    `;
+  } else {
+    legendItems.innerHTML = `
+      <span><span class="legend-line temp-high"></span> Temp</span>
+      <span><span class="legend-line precip"></span> Precip</span>
+      <span><span class="legend-line freezing"></span> 32°F</span>
+    `;
+  }
 }
 
 // Navigation and Edit UI
@@ -222,7 +251,7 @@ async function loadAllResorts(useCache = false) {
     try {
       let data = useCache && cachedWeatherData[resort.slug] ? cachedWeatherData[resort.slug] : await fetchForecast(resort);
       cachedWeatherData[resort.slug] = data;
-      charts.push(renderChart(resort, data, currentActivity));
+      charts.push(renderChart(resort, data, currentActivity, currentChartMode));
     } catch (err) {
       console.error(`Failed to load ${resort.name}:`, err);
       charts.push(`<div class="col-12"><div class="chart-card" id="${resort.slug}"><div class="alert alert-danger mb-0">⚠️ Failed to load ${resort.name} forecast</div></div></div>`);
@@ -329,7 +358,11 @@ async function init() {
     document.querySelectorAll('.activity-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.activity === currentActivity);
     });
+    document.querySelectorAll('.chart-mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === currentChartMode);
+    });
     updateTagline();
+    updateChartLegend();
 
     if (currentActivity === 'dogwalk') {
       resorts = await initDogWalkLocation();
@@ -366,7 +399,7 @@ async function init() {
 }
 
 // Expose to global scope for onclick handlers
-window.app = { setActivity, moveResort, removeResort, addResort, addSuggestedResort, resetLocations, manualRefresh, init };
+window.app = { setActivity, setChartMode, moveResort, removeResort, addResort, addSuggestedResort, resetLocations, manualRefresh, init };
 
 // Auto-init when DOM ready
 if (document.readyState === 'loading') {
