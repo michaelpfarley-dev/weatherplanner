@@ -41,7 +41,8 @@ export function calculateSkiingQuality(day, prevDay, prevDay2) {
     return 'fair';
   }
 
-  if (tempMax <= 32 && precipProb <= 50) return 'good';
+  // Below freezing = any precip is snow, so it's good skiing weather
+  if (tempMax <= 32) return 'good';
   if (tempMin < 30 && precipProb <= 30) return 'good';
   if (tempMax > 32 && tempMax <= 40 && precipProb > 40) return 'icy';
   if (precipProb <= 20) return 'fair';
@@ -77,6 +78,8 @@ export function calculateHourlySkiingQuality(hours, index) {
   if (recentRain && temp <= 32) return 'icy';
   if (recentRain && temp > 32 && temp < 37) return 'icy';
   if (recentRain && temp >= 37) return 'fair';
+  // Below freezing = any precip would be snow, so it's good
+  if (temp <= 32) return 'good';
   if (isDry && temp >= 15 && temp < 40 && precip <= 20) return 'good';
   if (isDry && temp < 40 && precip <= 40) return 'good';
   if (!isSnowing && temp >= 28 && temp <= 35 && precip > 40) return 'icy';
