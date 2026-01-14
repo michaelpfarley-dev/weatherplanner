@@ -8,7 +8,59 @@
 
 body {
   background: #f8fafc;
-  font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Navbar */
+.navbar {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  gap: 16px;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #1e293b;
+}
+
+.navbar-logo {
+  width: 80px;
+  height: 80px;
+}
+
+.navbar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.navbar-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.navbar-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+}
+
+.navbar-version {
+  font-size: 0.6rem;
 }
 
 /* Locations bar */
@@ -22,41 +74,6 @@ body {
 
 .locations-bar-inner {
   margin-bottom: 0;
-}
-
-.edit-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #475569;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.edit-toggle-btn:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-
-.edit-toggle-btn[aria-expanded="true"] {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
-}
-
-.edit-toggle-btn[aria-expanded="true"] .edit-toggle-icon {
-  transform: rotate(180deg);
-}
-
-.edit-toggle-icon {
-  font-size: 0.7rem;
-  transition: transform 0.2s ease;
 }
 
 .resort-link {
@@ -914,12 +931,6 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Mobile edit button */
-.edit-btn-mobile {
-  display: none;
-  margin-bottom: 12px;
-}
-
 /* Activity toggle */
 .activity-toggle {
   display: inline-flex;
@@ -997,6 +1008,25 @@ body {
 }
 
 @media (max-width: 575.98px) {
+  .navbar-inner {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .navbar-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .navbar-title {
+    font-size: 1.25rem;
+  }
+
+  .navbar-status {
+    display: none;
+  }
+
   .chart, .precip-totals, .weather-details {
     display: none;
   }
@@ -1005,13 +1035,8 @@ body {
     display: none;
   }
 
-  .locations-bar {
+  #locationsBar {
     display: none !important;
-  }
-
-  .edit-btn-mobile {
-    display: inline-flex;
-    margin-bottom: 12px;
   }
 
   .resort-location {

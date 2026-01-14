@@ -91,13 +91,13 @@ function renderNav() {
   const nav = document.getElementById('resortNav');
   nav.innerHTML = resorts.map(r => `<a class="resort-link" href="#${r.slug}">${r.name}</a>`).join('');
   const label = document.getElementById('locationsLabel');
-  if (label) label.textContent = currentActivity === 'skiing' ? 'My Resorts:' : 'My Locations:';
+  if (label) label.textContent = 'My Locations:';
 }
 
 function renderEditList() {
   const list = document.getElementById('resortList');
   const isSkiing = currentActivity === 'skiing';
-  const itemLabel = isSkiing ? 'resort' : 'location';
+  const itemLabel = 'location';
 
   list.innerHTML = resorts.map((r, i) => `
     <div class="d-flex align-items-center gap-2 p-2 bg-light rounded mb-2">
@@ -112,7 +112,7 @@ function renderEditList() {
   `).join('');
 
   const editHeader = document.getElementById('editHeader');
-  if (editHeader) editHeader.textContent = isSkiing ? `Manage Resorts (max ${MAX_LOCATIONS})` : `Manage Locations (max ${MAX_LOCATIONS})`;
+  if (editHeader) editHeader.textContent = `Manage Locations (max ${MAX_LOCATIONS})`;
 
   const addSection = document.getElementById('addResortSection');
   const maxReached = resorts.length >= MAX_LOCATIONS;
@@ -125,9 +125,9 @@ function renderEditList() {
       <div class="add-section-container">
         <!-- Section 1: Ski Resorts -->
         <div class="add-method-section">
-          <h6 class="add-method-header">🎿 Add from Ski Resorts</h6>
+          <h6 class="add-method-header">🎿 Add Ski Location</h6>
           <div class="input-group input-group-sm mb-2">
-            <input type="text" class="form-control" id="resortSearchInput" placeholder="Search 510 US ski resorts...">
+            <input type="text" class="form-control" id="resortSearchInput" placeholder="Search 510 US ski locations...">
           </div>
           <div id="resortSearchResults" class="resort-search-results"></div>
           <div id="resortStateList" class="resort-state-list"></div>
@@ -206,7 +206,7 @@ function renderEditList() {
   if (resorts.length > 0) {
     const resetDiv = document.createElement('div');
     resetDiv.className = 'text-center mt-3 pt-3 border-top reset-section';
-    resetDiv.innerHTML = `<button class="btn btn-sm btn-outline-danger" onclick="app.resetLocations()">Reset All ${isSkiing ? 'Resorts' : 'Locations'}</button>`;
+    resetDiv.innerHTML = `<button class="btn btn-sm btn-outline-danger" onclick="app.resetLocations()">Reset All Locations</button>`;
     addSection.parentNode.appendChild(resetDiv);
   }
 }
@@ -226,7 +226,7 @@ function renderResortSearchResults(query) {
   const results = filterResorts(query);
 
   if (results.length === 0) {
-    resultsDiv.innerHTML = '<p class="text-muted small">No resorts found.</p>';
+    resultsDiv.innerHTML = '<p class="text-muted small">No locations found.</p>';
     return;
   }
 
@@ -267,7 +267,7 @@ function showStateResorts(state) {
 
   const stateResorts = getResortsByState(state);
   stateResortList.innerHTML = `
-    <div class="mt-2 mb-1 small text-muted">${state} Resorts (${stateResorts.length}):</div>
+    <div class="mt-2 mb-1 small text-muted">${state} Locations (${stateResorts.length}):</div>
     <div class="state-resort-list">
       ${stateResorts.map(r => {
         const alreadyAdded = resorts.some(res => Math.abs(res.lat - r.lat) < 0.01 && Math.abs(res.lon - r.lon) < 0.01);
@@ -287,7 +287,7 @@ function showStateResorts(state) {
 function addSkiResort(resort) {
   if (resorts.length >= MAX_LOCATIONS) return;
   if (resorts.some(r => Math.abs(r.lat - resort.lat) < 0.01 && Math.abs(r.lon - resort.lon) < 0.01)) {
-    alert('This resort is already in your list.');
+    alert('This location is already in your list.');
     return;
   }
   const slug = resort.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -314,9 +314,9 @@ function renderEmptyStateAddSection() {
     <div class="add-section-container">
       <!-- Section 1: Ski Resorts -->
       <div class="add-method-section">
-        <h6 class="add-method-header">🎿 Add from Ski Resorts</h6>
+        <h6 class="add-method-header">🎿 Add Ski Location</h6>
         <div class="input-group input-group-sm mb-2">
-          <input type="text" class="form-control" id="emptyResortSearchInput" placeholder="Search 510 US ski resorts...">
+          <input type="text" class="form-control" id="emptyResortSearchInput" placeholder="Search 510 US ski locations...">
         </div>
         <div id="emptyResortSearchResults" class="resort-search-results"></div>
         <div id="emptyResortStateList" class="resort-state-list"></div>
@@ -389,7 +389,7 @@ function renderEmptyResortSearchResults(query) {
   const results = filterResorts(query);
 
   if (results.length === 0) {
-    resultsDiv.innerHTML = '<p class="text-muted small">No resorts found.</p>';
+    resultsDiv.innerHTML = '<p class="text-muted small">No locations found.</p>';
     return;
   }
 
@@ -429,7 +429,7 @@ function showEmptyStateResorts(state) {
 
   const stateResorts = getResortsByState(state);
   stateResortList.innerHTML = `
-    <div class="mt-2 mb-1 small text-muted">${state} Resorts (${stateResorts.length}):</div>
+    <div class="mt-2 mb-1 small text-muted">${state} Locations (${stateResorts.length}):</div>
     <div class="state-resort-list">
       ${stateResorts.map(r => {
         return `
@@ -702,20 +702,21 @@ async function loadAllResorts(useCache = false) {
   if (legendBar) legendBar.style.display = resorts.length > 0 ? '' : 'none';
 
   if (resorts.length === 0) {
-    // Hide locations bar and edit buttons when empty
-    document.querySelectorAll('.locations-bar, .edit-btn-desktop, .edit-btn-mobile').forEach(el => el.style.display = 'none');
+    // Hide locations bar when empty
+    const locationsBar = document.getElementById('locationsBar');
+    if (locationsBar) locationsBar.style.display = 'none';
 
     if (currentActivity === 'dogwalk') {
       container.innerHTML = `<div class="col-12 text-center py-5"><h5 class="text-muted">🐕 No locations set</h5><p class="text-muted">Allow location access or add a location manually.</p></div>`;
     } else {
-      // Show popular resorts + 3-section add UI for empty state
+      // Show popular locations + 3-section add UI for empty state
       container.innerHTML = `
         <div class="col-12">
           <div class="empty-state-card">
             <h5 class="text-center mb-3">🎿 Get started</h5>
 
             <div class="popular-resorts-section mb-4">
-              <div class="text-muted small text-center mb-2">Quick add a popular resort:</div>
+              <div class="text-muted small text-center mb-2">Quick add a popular location:</div>
               <div class="suggested-resorts d-flex justify-content-center gap-2">
                 ${SUGGESTED_RESORTS.map(r => `
                   <button class="btn suggested-resort-btn" onclick='app.addSuggestedResort(${JSON.stringify(r)})'>
@@ -736,8 +737,9 @@ async function loadAllResorts(useCache = false) {
     }
     return;
   } else {
-    // Show locations bar and edit buttons when not empty
-    document.querySelectorAll('.locations-bar, .edit-btn-desktop, .edit-btn-mobile').forEach(el => el.style.display = '');
+    // Show locations bar when not empty
+    const locationsBar = document.getElementById('locationsBar');
+    if (locationsBar) locationsBar.style.display = '';
   }
 
   const charts = [];

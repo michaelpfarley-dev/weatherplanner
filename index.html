@@ -4,67 +4,46 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GoWindow</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25 55 Q10 55 10 42 Q10 30 25 28 Q28 15 45 15 Q62 15 68 28 Q72 25 80 28 Q92 30 92 45 Q92 58 78 58 Z' fill='%233b82f6'/%3E%3Ccircle cx='30' cy='40' r='10' fill='%2322c55e'/%3E%3Ccircle cx='55' cy='40' r='10' fill='%23facc15'/%3E%3Ccircle cx='80' cy='40' r='10' fill='%23dc2626'/%3E%3Cline x1='25' y1='65' x2='25' y2='82' stroke='%233b82f6' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='40' y1='65' x2='40' y2='82' stroke='%233b82f6' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='55' y1='65' x2='55' y2='82' stroke='%233b82f6' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='70' cy='70' r='4' fill='%2360a5fa'/%3E%3Ccircle cx='80' cy='78' r='4' fill='%2360a5fa'/%3E%3Ccircle cx='90' cy='70' r='4' fill='%2360a5fa'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body>
-  <div class="container py-4 position-relative">
-    <div class="text-center mb-4">
-      <div class="d-flex align-items-center justify-content-center gap-3">
-        <svg viewBox="0 0 100 100" style="width: 64px; height: 64px;">
-          <path d="M25 55 Q10 55 10 42 Q10 30 25 28 Q28 15 45 15 Q62 15 68 28 Q72 25 80 28 Q92 30 92 45 Q92 58 78 58 Z" fill="#3b82f6"/>
-          <circle cx="35" cy="38" r="8" fill="#22c55e"/>
-          <circle cx="55" cy="38" r="8" fill="#facc15"/>
-          <circle cx="75" cy="38" r="8" fill="#dc2626"/>
-          <line x1="30" y1="62" x2="30" y2="78" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
-          <line x1="42" y1="62" x2="42" y2="78" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
-          <line x1="54" y1="62" x2="54" y2="78" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="68" cy="68" r="4" fill="#60a5fa"/>
-          <circle cx="78" cy="75" r="4" fill="#60a5fa"/>
-          <circle cx="88" cy="68" r="4" fill="#60a5fa"/>
-        </svg>
-        <div class="text-start">
-          <h1 class="h3 mb-0 fw-bold">GoWindow</h1>
-          <div id="tagline" class="text-muted" style="font-size: 0.9rem;">Find your skiing weather window.</div>
-        </div>
-      </div>
-      <div class="mt-2">
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner container-fluid px-4">
+        <a class="navbar-brand" href="#">
+          <img src="images/logo.png" alt="GoWindow" class="navbar-logo">
+          <span class="navbar-title">GoWindow</span>
+        </a>
         <div class="activity-toggle">
           <button class="activity-btn active" data-activity="skiing" onclick="app.setActivity('skiing')">🎿 Skiing</button>
           <button class="activity-btn" data-activity="dogwalk" onclick="app.setActivity('dogwalk')">🐕 Dog Walk</button>
         </div>
-      </div>
-    </div>
-    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.30.0</div>
+        <div class="navbar-status">
+          <div class="navbar-status-row">
+            <span id="lastUpdated" class="text-muted">Updated just now</span>
+            <button id="refreshBtn" class="btn btn-outline-secondary btn-sm refresh-btn" onclick="app.manualRefresh()" title="Refresh data">↻</button>
+          </div>
+          <div class="navbar-version text-muted">v0.31.3</div>
+        </div>
+  </nav>
 
-    <div class="locations-bar mb-3">
+  <div class="container py-4">
+    <!-- Locations bar -->
+    <div class="locations-bar mb-3" id="locationsBar">
       <div class="locations-bar-inner d-flex flex-wrap align-items-center gap-2">
-        <span id="locationsLabel" class="text-muted small">My Resorts:</span>
+        <span id="locationsLabel" class="text-muted small">My Locations:</span>
         <div class="d-flex flex-wrap gap-2" id="resortNav"></div>
-        <button class="btn edit-toggle-btn edit-btn-desktop" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
-          <span class="edit-toggle-text">Edit</span>
-          <span class="edit-toggle-icon">▼</span>
-        </button>
-        <div class="ms-auto d-flex align-items-center gap-2">
-          <span id="lastUpdated" class="text-muted" style="font-size: 0.7rem;">Updated just now</span>
-          <button id="refreshBtn" class="btn btn-outline-secondary btn-sm refresh-btn" onclick="app.manualRefresh()" title="Refresh data">↻</button>
+        <div class="ms-auto">
+          <button class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#editSection">Edit</button>
         </div>
       </div>
     </div>
 
-    <button class="btn edit-toggle-btn edit-btn-mobile" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
-      <span class="edit-toggle-text">Edit Locations</span>
-      <span class="edit-toggle-icon">▼</span>
-    </button>
-    <button id="refreshBtnMobile" class="btn btn-outline-secondary btn-sm refresh-btn-mobile" onclick="app.manualRefresh()" title="Refresh data">↻</button>
-
     <div class="collapse mb-4" id="editSection">
       <div class="card card-body">
-        <h6 id="editHeader" class="mb-3">Manage Resorts (max 10)</h6>
+        <h6 id="editHeader" class="mb-3">Manage Locations (max 25)</h6>
         <div id="resortList" class="mb-3"></div>
         <div id="addResortSection"></div>
       </div>
