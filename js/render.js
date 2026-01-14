@@ -170,7 +170,7 @@ export function renderChart(resort, data, currentActivity, chartMode = 'detailed
         <div class="chart-header">
           <div>
             <div class="resort-name">${resort.name}</div>
-            <div class="resort-location text-muted" style="font-size: 0.75rem;">${resort.location || ''}</div>
+            <div class="text-muted" style="font-size: 0.7rem;">${resort.location ? resort.location + ' · ' : ''}<a href="https://www.google.com/maps/place/${data.latitude},${data.longitude}/@${data.latitude},${data.longitude},11z/data=!5m1!1e4" target="_blank" class="text-muted">${data.latitude.toFixed(2)}°, ${data.longitude.toFixed(2)}°</a> · ${Math.round(data.elevation * 3.281).toLocaleString()} ft</div>
           </div>
           <div style="display: flex; align-items: center;">
             <div class="view-toggle">
