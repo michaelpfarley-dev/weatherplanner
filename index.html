@@ -10,23 +10,32 @@
 </head>
 <body>
   <!-- Top Navbar -->
-  <nav class="navbar">
-    <div class="navbar-inner container-fluid px-4">
-        <a class="navbar-brand" href="#">
-          <img src="images/logo.png" alt="GoWindow" class="navbar-logo">
-          <span class="navbar-title">GoWindow</span>
-        </a>
-        <div class="activity-toggle">
-          <button class="activity-btn active" data-activity="skiing" onclick="app.setActivity('skiing')">🎿 Skiing</button>
-          <button class="activity-btn" data-activity="dogwalk" onclick="app.setActivity('dogwalk')">🐕 Dog Walk</button>
+  <nav class="navbar navbar-expand-md bg-body-tertiary">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="images/logo.png" alt="GoWindow" width="36" height="36" class="me-2">
+        <span>GoWindow</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-md-0">
+          <li class="nav-item">
+            <a class="nav-link active activity-link" href="#" data-activity="skiing" onclick="app.setActivity('skiing'); return false;">🎿 Skiing</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link activity-link" href="#" data-activity="dogwalk" onclick="app.setActivity('dogwalk'); return false;">🐕 Dog Walk</a>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#editSection">📍 Edit Locations</button>
+          <button class="btn btn-outline-secondary btn-sm" id="refreshBtn" onclick="app.manualRefresh()" title="Refresh data">↻</button>
+          <small class="text-muted d-none d-lg-inline" id="lastUpdated">Updated just now</small>
+          <small class="text-muted d-none d-lg-inline">v0.32.1</small>
         </div>
-        <div class="navbar-status">
-          <div class="navbar-status-row">
-            <span id="lastUpdated" class="text-muted">Updated just now</span>
-            <button id="refreshBtn" class="btn btn-outline-secondary btn-sm refresh-btn" onclick="app.manualRefresh()" title="Refresh data">↻</button>
-          </div>
-          <div class="navbar-version text-muted">v0.32.0</div>
-        </div>
+      </div>
+    </div>
   </nav>
 
   <div class="container py-4">
@@ -35,9 +44,6 @@
       <div class="locations-bar-inner d-flex flex-wrap align-items-center gap-2">
         <span id="locationsLabel" class="text-muted small">My Locations:</span>
         <div class="d-flex flex-wrap gap-2" id="resortNav"></div>
-        <div class="ms-auto">
-          <button class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#editSection">Edit</button>
-        </div>
       </div>
     </div>
 

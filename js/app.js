@@ -26,8 +26,8 @@ let lastUpdated = Date.now();
 function setActivity(activity) {
   currentActivity = activity;
   saveActivity(activity);
-  document.querySelectorAll('.activity-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.activity === activity);
+  document.querySelectorAll('.activity-link').forEach(link => {
+    link.classList.toggle('active', link.dataset.activity === activity);
   });
   updateTagline();
   cachedWeatherData = {};
@@ -851,8 +851,8 @@ function manualRefresh() {
 async function init() {
   console.log('GoWindow initializing...');
   try {
-    document.querySelectorAll('.activity-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.activity === currentActivity);
+    document.querySelectorAll('.activity-link').forEach(link => {
+      link.classList.toggle('active', link.dataset.activity === currentActivity);
     });
     document.querySelectorAll('.chart-mode-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === currentChartMode);

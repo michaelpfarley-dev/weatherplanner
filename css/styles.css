@@ -13,54 +13,9 @@ body {
   line-height: 1.5;
 }
 
-/* Navbar */
-.navbar {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.navbar-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-  gap: 16px;
-}
-
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: #1e293b;
-}
-
-.navbar-logo {
-  width: 80px;
-  height: 80px;
-}
-
-.navbar-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.navbar-status {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.navbar-status-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.7rem;
-}
-
-.navbar-version {
-  font-size: 0.6rem;
+/* Navbar customizations */
+#refreshBtn.spinning {
+  animation: spin 1s linear infinite;
 }
 
 /* Locations bar */
@@ -931,34 +886,6 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Activity toggle */
-.activity-toggle {
-  display: inline-flex;
-  background: #e2e8f0;
-  border-radius: 8px;
-  padding: 2px;
-}
-
-.activity-btn {
-  padding: 4px 12px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  color: #64748b;
-}
-
-.activity-btn:hover {
-  color: #1e293b;
-}
-
-.activity-btn.active {
-  background: white;
-  color: #1e293b;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
 
 /* Refresh button */
 .refresh-btn {
@@ -1008,25 +935,6 @@ body {
 }
 
 @media (max-width: 575.98px) {
-  .navbar-inner {
-    flex-direction: column;
-    gap: 8px;
-    padding: 8px 0;
-  }
-
-  .navbar-logo {
-    width: 60px;
-    height: 60px;
-  }
-
-  .navbar-title {
-    font-size: 1.25rem;
-  }
-
-  .navbar-status {
-    display: none;
-  }
-
   .chart, .precip-totals, .weather-details {
     display: none;
   }
@@ -1041,21 +949,6 @@ body {
 
   .resort-location {
     display: none;
-  }
-
-
-  .refresh-btn-mobile {
-    display: block;
-    position: absolute;
-    top: 12px;
-    right: 110px;
-    font-size: 1rem;
-    padding: 2px 8px;
-    line-height: 1;
-  }
-
-  .refresh-btn-mobile.spinning {
-    animation: spin 1s linear infinite;
   }
 
   .mobile-forecast {
