@@ -12,7 +12,7 @@ export const SUGGESTED_RESORTS = [
   { slug: 'stowe', name: 'Stowe', lat: 44.53, lon: -72.78, timezone: 'America/New_York', location: 'Stowe, VT, USA' }
 ];
 
-export const MAX_LOCATIONS = 10;
+export const MAX_LOCATIONS = 25;
 export const REFRESH_INTERVAL = 30 * 60 * 1000;
 export const STALE_THRESHOLD = 15 * 60 * 1000;
 

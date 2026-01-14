@@ -11,22 +11,70 @@ body {
   font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.resort-link {
-  text-decoration: none;
-  color: #475569;
+/* Locations bar */
+.locations-bar {
   background: white;
   border: 1px solid #e2e8f0;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.locations-bar-inner {
+  margin-bottom: 0;
+}
+
+.edit-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edit-toggle-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.edit-toggle-btn[aria-expanded="true"] {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.edit-toggle-btn[aria-expanded="true"] .edit-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.edit-toggle-icon {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+
+.resort-link {
+  text-decoration: none;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
   font-weight: 500;
   transition: all 0.15s ease;
 }
 
 .resort-link:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #334155;
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e3a8a;
 }
 
 .chart-card {
@@ -800,36 +848,40 @@ body {
 }
 
 /* Suggested resorts for first-run */
+.suggested-resorts {
+  flex-wrap: nowrap;
+}
+
 .suggested-resort-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 20px;
+  padding: 8px 14px;
   background: white;
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 140px;
+  flex-shrink: 0;
 }
 
 .suggested-resort-btn:hover {
   border-color: #22c55e;
   background: rgba(34, 197, 94, 0.05);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .suggested-resort-btn .resort-name {
   font-weight: 600;
   color: #1e293b;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
 }
 
 .suggested-resort-btn .resort-location {
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   color: #64748b;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .or-divider {
@@ -865,6 +917,7 @@ body {
 /* Mobile edit button */
 .edit-btn-mobile {
   display: none;
+  margin-bottom: 12px;
 }
 
 /* Activity toggle */
@@ -956,17 +1009,15 @@ body {
     display: none !important;
   }
 
+  .edit-btn-mobile {
+    display: inline-flex;
+    margin-bottom: 12px;
+  }
+
   .resort-location {
     display: none;
   }
 
-  .edit-btn-mobile {
-    display: block;
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    font-size: 0.75rem;
-  }
 
   .refresh-btn-mobile {
     display: block;
@@ -1069,6 +1120,116 @@ body {
 }
 
 /* Mobile landscape - reduce chart height to prevent overflow */
+/* Add location sections */
+.add-section-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.add-method-section {
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.add-method-header {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.resort-search-results {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.resort-state-list {
+  margin-top: 8px;
+}
+
+.state-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.state-chip {
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #475569;
+}
+
+.state-chip:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.state-resort-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.resort-result {
+  transition: background 0.15s;
+}
+
+.resort-result:hover {
+  background: #f1f5f9 !important;
+}
+
+/* Empty state card */
+.empty-state-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 575.98px) {
+  .empty-state-card {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .empty-state-card .suggested-resorts {
+    flex-wrap: wrap;
+  }
+
+  .empty-state-card .suggested-resort-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+
+  .add-method-section {
+    padding: 10px;
+  }
+
+  .add-method-header {
+    font-size: 0.8rem;
+  }
+
+  .state-chips {
+    max-height: 100px;
+    overflow-y: auto;
+  }
+}
+
 @media (max-height: 500px) and (orientation: landscape) {
   .chart {
     height: 120px;

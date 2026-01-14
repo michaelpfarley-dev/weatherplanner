@@ -39,22 +39,26 @@
         </div>
       </div>
     </div>
-    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.28.21</div>
+    <div class="text-muted position-absolute top-0 end-0 p-2" style="font-size: 0.65rem;">v0.30.0</div>
 
-    <div class="locations-bar d-flex flex-wrap align-items-center gap-2 mb-3">
-      <span id="locationsLabel" class="text-muted small">My Resorts:</span>
-      <div class="d-flex flex-wrap gap-2" id="resortNav"></div>
-      <button class="btn btn-outline-secondary btn-sm edit-btn-desktop" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
-        ⚙️ Edit
-      </button>
-      <div class="ms-auto d-flex align-items-center gap-2">
-        <span id="lastUpdated" class="text-muted" style="font-size: 0.7rem;">Updated just now</span>
-        <button id="refreshBtn" class="btn btn-outline-secondary btn-sm refresh-btn" onclick="app.manualRefresh()" title="Refresh data">↻</button>
+    <div class="locations-bar mb-3">
+      <div class="locations-bar-inner d-flex flex-wrap align-items-center gap-2">
+        <span id="locationsLabel" class="text-muted small">My Resorts:</span>
+        <div class="d-flex flex-wrap gap-2" id="resortNav"></div>
+        <button class="btn edit-toggle-btn edit-btn-desktop" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
+          <span class="edit-toggle-text">Edit</span>
+          <span class="edit-toggle-icon">▼</span>
+        </button>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span id="lastUpdated" class="text-muted" style="font-size: 0.7rem;">Updated just now</span>
+          <button id="refreshBtn" class="btn btn-outline-secondary btn-sm refresh-btn" onclick="app.manualRefresh()" title="Refresh data">↻</button>
+        </div>
       </div>
     </div>
 
-    <button class="btn btn-outline-secondary btn-sm edit-btn-mobile" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
-      Edit Locations
+    <button class="btn edit-toggle-btn edit-btn-mobile" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
+      <span class="edit-toggle-text">Edit Locations</span>
+      <span class="edit-toggle-icon">▼</span>
     </button>
     <button id="refreshBtnMobile" class="btn btn-outline-secondary btn-sm refresh-btn-mobile" onclick="app.manualRefresh()" title="Refresh data">↻</button>
 

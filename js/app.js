@@ -2,8 +2,17 @@
 
 import { MAX_LOCATIONS, REFRESH_INTERVAL, STALE_THRESHOLD, SUGGESTED_RESORTS } from './config.js';
 import { loadLocations, saveLocations, loadActivity, saveActivity, loadChartMode, saveChartMode, initDogWalkLocation } from './storage.js';
-import { fetchForecast, fetchHourlyForecast, searchLocations } from './api.js';
+import { fetchForecast, fetchHourlyForecast, searchLocations, getTimezoneForCoords } from './api.js';
 import { renderChart, renderHourlyChart } from './render.js';
+import { SKI_RESORTS, filterResorts, getResortStates, getResortsByState } from './resorts.js';
+
+// One-time migration: clear locations to show new UI (v0.30)
+const MIGRATION_KEY = 'gowindow-migration-v030';
+if (!localStorage.getItem(MIGRATION_KEY)) {
+  localStorage.removeItem('weatherplanner-locations-skiing');
+  localStorage.removeItem('weatherplanner-locations-dogwalk');
+  localStorage.setItem(MIGRATION_KEY, 'done');
+}
 
 // App State
 let currentActivity = loadActivity();
@@ -103,21 +112,87 @@ function renderEditList() {
   `).join('');
 
   const editHeader = document.getElementById('editHeader');
-  if (editHeader) editHeader.textContent = isSkiing ? 'Manage Resorts (max 10)' : 'Manage Locations (max 10)';
+  if (editHeader) editHeader.textContent = isSkiing ? `Manage Resorts (max ${MAX_LOCATIONS})` : `Manage Locations (max ${MAX_LOCATIONS})`;
 
   const addSection = document.getElementById('addResortSection');
-  if (resorts.length >= MAX_LOCATIONS) {
-    addSection.innerHTML = `<p class="text-muted small text-center mb-0">Maximum of 10 ${itemLabel}s reached.</p>`;
+  const maxReached = resorts.length >= MAX_LOCATIONS;
+
+  if (maxReached) {
+    addSection.innerHTML = `<p class="text-muted small text-center mb-0">Maximum of ${MAX_LOCATIONS} ${itemLabel}s reached.</p>`;
+  } else if (isSkiing) {
+    // 3-section UI for skiing mode
+    addSection.innerHTML = `
+      <div class="add-section-container">
+        <!-- Section 1: Ski Resorts -->
+        <div class="add-method-section">
+          <h6 class="add-method-header">🎿 Add from Ski Resorts</h6>
+          <div class="input-group input-group-sm mb-2">
+            <input type="text" class="form-control" id="resortSearchInput" placeholder="Search 510 US ski resorts...">
+          </div>
+          <div id="resortSearchResults" class="resort-search-results"></div>
+          <div id="resortStateList" class="resort-state-list"></div>
+        </div>
+
+        <!-- Section 2: City/Zip -->
+        <div class="add-method-section">
+          <h6 class="add-method-header">📍 Search by City/Zip</h6>
+          <div class="input-group input-group-sm mb-2">
+            <input type="text" class="form-control" id="citySearchInput" placeholder="City, state or zip code...">
+            <button class="btn btn-primary" type="button" id="citySearchBtn">Search</button>
+          </div>
+          <div id="citySearchResults"></div>
+        </div>
+
+        <!-- Section 3: Coordinates -->
+        <div class="add-method-section">
+          <h6 class="add-method-header">🌐 Enter Coordinates</h6>
+          <div class="row g-2 mb-2">
+            <div class="col">
+              <input type="text" class="form-control form-control-sm" id="coordName" placeholder="Location name *">
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col">
+              <input type="number" class="form-control form-control-sm" id="coordLat" placeholder="Latitude" step="any" min="-90" max="90">
+            </div>
+            <div class="col">
+              <input type="number" class="form-control form-control-sm" id="coordLon" placeholder="Longitude" step="any" min="-180" max="180">
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-primary btn-sm" type="button" id="coordAddBtn">Add</button>
+            </div>
+          </div>
+          <div id="coordError" class="text-danger small"></div>
+        </div>
+      </div>
+    `;
+
+    // Resort search - type-ahead
+    const resortInput = document.getElementById('resortSearchInput');
+    resortInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      renderResortSearchResults(query);
+    });
+
+    // Show state list initially
+    renderResortStateList();
+
+    // City/Zip search
+    document.getElementById('citySearchBtn').addEventListener('click', doCitySearch);
+    document.getElementById('citySearchInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') doCitySearch(); });
+
+    // Coordinate entry
+    document.getElementById('coordAddBtn').addEventListener('click', addFromCoordinates);
+
   } else {
-    const placeholder = isSkiing ? 'Resort name or nearby town...' : 'Address, city, or place name...';
-    const tip = isSkiing ? 'Tip: Search by exact resort name or nearest town' : 'Tip: Search by city name, address, or landmark';
+    // Dog walk mode - simple city/zip search
     addSection.innerHTML = `
       <h6 class="text-muted small">Add a ${itemLabel}</h6>
       <div class="input-group input-group-sm mb-2">
-        <input type="text" class="form-control" id="searchInput" placeholder="${placeholder}">
+        <input type="text" class="form-control" id="searchInput" placeholder="Address, city, or place name...">
         <button class="btn btn-primary" type="button" id="searchBtn">Search</button>
       </div>
-      <div class="text-muted" style="font-size: 0.65rem; margin-top: -4px; margin-bottom: 8px;">${tip}</div>
+      <div class="text-muted" style="font-size: 0.65rem; margin-top: -4px; margin-bottom: 8px;">Tip: Search by city name, address, or landmark</div>
       <div id="searchResults"></div>
     `;
     document.getElementById('searchBtn').addEventListener('click', doSearch);
@@ -125,11 +200,416 @@ function renderEditList() {
   }
 
   // Add reset button if there are locations
+  const existingReset = addSection.parentNode.querySelector('.reset-section');
+  if (existingReset) existingReset.remove();
+
   if (resorts.length > 0) {
     const resetDiv = document.createElement('div');
-    resetDiv.className = 'text-center mt-3 pt-3 border-top';
+    resetDiv.className = 'text-center mt-3 pt-3 border-top reset-section';
     resetDiv.innerHTML = `<button class="btn btn-sm btn-outline-danger" onclick="app.resetLocations()">Reset All ${isSkiing ? 'Resorts' : 'Locations'}</button>`;
     addSection.parentNode.appendChild(resetDiv);
+  }
+}
+
+// Render resort search results (type-ahead)
+function renderResortSearchResults(query) {
+  const resultsDiv = document.getElementById('resortSearchResults');
+  const stateListDiv = document.getElementById('resortStateList');
+
+  if (!query || query.length < 2) {
+    resultsDiv.innerHTML = '';
+    stateListDiv.style.display = '';
+    return;
+  }
+
+  stateListDiv.style.display = 'none';
+  const results = filterResorts(query);
+
+  if (results.length === 0) {
+    resultsDiv.innerHTML = '<p class="text-muted small">No resorts found.</p>';
+    return;
+  }
+
+  resultsDiv.innerHTML = results.map(r => {
+    const alreadyAdded = resorts.some(res => Math.abs(res.lat - r.lat) < 0.01 && Math.abs(res.lon - r.lon) < 0.01);
+    return `
+      <div class="resort-result p-2 bg-light rounded mb-1 small d-flex justify-content-between align-items-center">
+        <div>
+          <div>${r.name}</div>
+          <div class="text-muted" style="font-size: 0.65rem;">${r.state}</div>
+        </div>
+        <button class="btn btn-sm btn-success py-0 px-2" ${alreadyAdded || resorts.length >= MAX_LOCATIONS ? 'disabled' : ''}
+          onclick='app.addSkiResort(${JSON.stringify(r).replace(/'/g, "&#39;")})'>${alreadyAdded ? 'Added' : 'Add'}</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// Render state list for browsing resorts
+function renderResortStateList() {
+  const stateListDiv = document.getElementById('resortStateList');
+  if (!stateListDiv) return;
+
+  const states = getResortStates();
+  stateListDiv.innerHTML = `
+    <div class="text-muted small mb-2">Or browse by state:</div>
+    <div class="state-chips">
+      ${states.map(state => `<button class="state-chip" onclick="app.showStateResorts('${state}')">${state}</button>`).join('')}
+    </div>
+    <div id="stateResortList"></div>
+  `;
+}
+
+// Show resorts for a specific state
+function showStateResorts(state) {
+  const stateResortList = document.getElementById('stateResortList');
+  if (!stateResortList) return;
+
+  const stateResorts = getResortsByState(state);
+  stateResortList.innerHTML = `
+    <div class="mt-2 mb-1 small text-muted">${state} Resorts (${stateResorts.length}):</div>
+    <div class="state-resort-list">
+      ${stateResorts.map(r => {
+        const alreadyAdded = resorts.some(res => Math.abs(res.lat - r.lat) < 0.01 && Math.abs(res.lon - r.lon) < 0.01);
+        return `
+          <div class="resort-result p-2 bg-light rounded mb-1 small d-flex justify-content-between align-items-center">
+            <div>${r.name}</div>
+            <button class="btn btn-sm btn-success py-0 px-2" ${alreadyAdded || resorts.length >= MAX_LOCATIONS ? 'disabled' : ''}
+              onclick='app.addSkiResort(${JSON.stringify(r).replace(/'/g, "&#39;")})'>${alreadyAdded ? 'Added' : 'Add'}</button>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+// Add ski resort from preset list
+function addSkiResort(resort) {
+  if (resorts.length >= MAX_LOCATIONS) return;
+  if (resorts.some(r => Math.abs(r.lat - resort.lat) < 0.01 && Math.abs(r.lon - resort.lon) < 0.01)) {
+    alert('This resort is already in your list.');
+    return;
+  }
+  const slug = resort.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  resorts.push({
+    slug,
+    name: resort.name,
+    lat: resort.lat,
+    lon: resort.lon,
+    timezone: resort.timezone,
+    location: resort.state
+  });
+  saveLocations(currentActivity, resorts);
+  renderNav();
+  renderEditList();
+  loadAllResorts();
+}
+
+// Render the 3-section add UI for empty state (no edit panel needed)
+function renderEmptyStateAddSection() {
+  const addSection = document.getElementById('emptyStateAddSection');
+  if (!addSection) return;
+
+  addSection.innerHTML = `
+    <div class="add-section-container">
+      <!-- Section 1: Ski Resorts -->
+      <div class="add-method-section">
+        <h6 class="add-method-header">🎿 Add from Ski Resorts</h6>
+        <div class="input-group input-group-sm mb-2">
+          <input type="text" class="form-control" id="emptyResortSearchInput" placeholder="Search 510 US ski resorts...">
+        </div>
+        <div id="emptyResortSearchResults" class="resort-search-results"></div>
+        <div id="emptyResortStateList" class="resort-state-list"></div>
+      </div>
+
+      <!-- Section 2: City/Zip -->
+      <div class="add-method-section">
+        <h6 class="add-method-header">📍 Search by City/Zip</h6>
+        <div class="input-group input-group-sm mb-2">
+          <input type="text" class="form-control" id="emptyCitySearchInput" placeholder="City, state or zip code...">
+          <button class="btn btn-primary" type="button" id="emptyCitySearchBtn">Search</button>
+        </div>
+        <div id="emptyCitySearchResults"></div>
+      </div>
+
+      <!-- Section 3: Coordinates -->
+      <div class="add-method-section">
+        <h6 class="add-method-header">🌐 Enter Coordinates</h6>
+        <div class="row g-2 mb-2">
+          <div class="col">
+            <input type="text" class="form-control form-control-sm" id="emptyCoordName" placeholder="Location name *">
+          </div>
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col">
+            <input type="number" class="form-control form-control-sm" id="emptyCoordLat" placeholder="Latitude" step="any" min="-90" max="90">
+          </div>
+          <div class="col">
+            <input type="number" class="form-control form-control-sm" id="emptyCoordLon" placeholder="Longitude" step="any" min="-180" max="180">
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-primary btn-sm" type="button" id="emptyCoordAddBtn">Add</button>
+          </div>
+        </div>
+        <div id="emptyCoordError" class="text-danger small"></div>
+      </div>
+    </div>
+  `;
+
+  // Resort search - type-ahead
+  const resortInput = document.getElementById('emptyResortSearchInput');
+  resortInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    renderEmptyResortSearchResults(query);
+  });
+
+  // Show state list initially
+  renderEmptyResortStateList();
+
+  // City/Zip search
+  document.getElementById('emptyCitySearchBtn').addEventListener('click', doEmptyCitySearch);
+  document.getElementById('emptyCitySearchInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') doEmptyCitySearch(); });
+
+  // Coordinate entry
+  document.getElementById('emptyCoordAddBtn').addEventListener('click', addFromEmptyCoordinates);
+}
+
+// Render resort search results for empty state
+function renderEmptyResortSearchResults(query) {
+  const resultsDiv = document.getElementById('emptyResortSearchResults');
+  const stateListDiv = document.getElementById('emptyResortStateList');
+
+  if (!query || query.length < 2) {
+    resultsDiv.innerHTML = '';
+    stateListDiv.style.display = '';
+    return;
+  }
+
+  stateListDiv.style.display = 'none';
+  const results = filterResorts(query);
+
+  if (results.length === 0) {
+    resultsDiv.innerHTML = '<p class="text-muted small">No resorts found.</p>';
+    return;
+  }
+
+  resultsDiv.innerHTML = results.map(r => {
+    return `
+      <div class="resort-result p-2 bg-light rounded mb-1 small d-flex justify-content-between align-items-center">
+        <div>
+          <div>${r.name}</div>
+          <div class="text-muted" style="font-size: 0.65rem;">${r.state}</div>
+        </div>
+        <button class="btn btn-sm btn-success py-0 px-2"
+          onclick='app.addSkiResort(${JSON.stringify(r).replace(/'/g, "&#39;")})'>Add</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// Render state list for empty state
+function renderEmptyResortStateList() {
+  const stateListDiv = document.getElementById('emptyResortStateList');
+  if (!stateListDiv) return;
+
+  const states = getResortStates();
+  stateListDiv.innerHTML = `
+    <div class="text-muted small mb-2">Or browse by state:</div>
+    <div class="state-chips">
+      ${states.map(state => `<button class="state-chip" onclick="app.showEmptyStateResorts('${state}')">${state}</button>`).join('')}
+    </div>
+    <div id="emptyStateResortList"></div>
+  `;
+}
+
+// Show resorts for a specific state in empty state
+function showEmptyStateResorts(state) {
+  const stateResortList = document.getElementById('emptyStateResortList');
+  if (!stateResortList) return;
+
+  const stateResorts = getResortsByState(state);
+  stateResortList.innerHTML = `
+    <div class="mt-2 mb-1 small text-muted">${state} Resorts (${stateResorts.length}):</div>
+    <div class="state-resort-list">
+      ${stateResorts.map(r => {
+        return `
+          <div class="resort-result p-2 bg-light rounded mb-1 small d-flex justify-content-between align-items-center">
+            <div>${r.name}</div>
+            <button class="btn btn-sm btn-success py-0 px-2"
+              onclick='app.addSkiResort(${JSON.stringify(r).replace(/'/g, "&#39;")})'>Add</button>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+// City/Zip search for empty state
+async function doEmptyCitySearch() {
+  const input = document.getElementById('emptyCitySearchInput');
+  const resultsDiv = document.getElementById('emptyCitySearchResults');
+  const query = input.value.trim();
+  if (!query) return;
+
+  resultsDiv.innerHTML = '<p class="text-muted small">Searching...</p>';
+  try {
+    const results = await searchLocations(query);
+    if (results.length === 0) {
+      resultsDiv.innerHTML = '<p class="text-muted small">No results found.</p>';
+      return;
+    }
+    resultsDiv.innerHTML = results.map(r => {
+      const slug = r.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const timezone = r.timezone || 'America/New_York';
+      const location = [r.admin1, r.country].filter(Boolean).join(', ');
+      return `
+        <div class="search-result p-2 bg-light rounded mb-2 small">
+          <div><div>${r.name}</div><div class="text-muted smaller">${r.admin1 || ''} ${r.country || ''} · ${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}</div></div>
+          <button class="btn btn-sm btn-success py-0 px-2"
+            onclick='app.addResort(${JSON.stringify({ slug, name: r.name, lat: r.latitude, lon: r.longitude, timezone, location })})'>Add</button>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    resultsDiv.innerHTML = '<p class="text-danger small">Search failed. Please try again.</p>';
+  }
+}
+
+// Add location from coordinates for empty state
+async function addFromEmptyCoordinates() {
+  const nameInput = document.getElementById('emptyCoordName');
+  const latInput = document.getElementById('emptyCoordLat');
+  const lonInput = document.getElementById('emptyCoordLon');
+  const errorDiv = document.getElementById('emptyCoordError');
+
+  const name = nameInput.value.trim();
+  const lat = parseFloat(latInput.value);
+  const lon = parseFloat(lonInput.value);
+
+  errorDiv.textContent = '';
+
+  // Validation
+  if (!name) {
+    errorDiv.textContent = 'Please enter a location name.';
+    return;
+  }
+  if (isNaN(lat) || lat < -90 || lat > 90) {
+    errorDiv.textContent = 'Latitude must be between -90 and 90.';
+    return;
+  }
+  if (isNaN(lon) || lon < -180 || lon > 180) {
+    errorDiv.textContent = 'Longitude must be between -180 and 180.';
+    return;
+  }
+
+  // Fetch timezone
+  errorDiv.textContent = 'Looking up timezone...';
+  try {
+    const timezone = await getTimezoneForCoords(lat, lon);
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    resorts.push({
+      slug,
+      name,
+      lat,
+      lon,
+      timezone,
+      location: `${lat.toFixed(4)}, ${lon.toFixed(4)}`
+    });
+    saveLocations(currentActivity, resorts);
+    renderNav();
+    renderEditList();
+    loadAllResorts();
+  } catch (e) {
+    errorDiv.textContent = 'Failed to lookup timezone. Please try again.';
+  }
+}
+
+// City/Zip search (separate from old doSearch for dog walk)
+async function doCitySearch() {
+  const input = document.getElementById('citySearchInput');
+  const resultsDiv = document.getElementById('citySearchResults');
+  const query = input.value.trim();
+  if (!query) return;
+
+  resultsDiv.innerHTML = '<p class="text-muted small">Searching...</p>';
+  try {
+    const results = await searchLocations(query);
+    if (results.length === 0) {
+      resultsDiv.innerHTML = '<p class="text-muted small">No results found.</p>';
+      return;
+    }
+    resultsDiv.innerHTML = results.map(r => {
+      const slug = r.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const alreadyAdded = resorts.some(res => Math.abs(res.lat - r.latitude) < 0.01 && Math.abs(res.lon - r.longitude) < 0.01);
+      const timezone = r.timezone || 'America/New_York';
+      const location = [r.admin1, r.country].filter(Boolean).join(', ');
+      return `
+        <div class="search-result p-2 bg-light rounded mb-2 small">
+          <div><div>${r.name}</div><div class="text-muted smaller">${r.admin1 || ''} ${r.country || ''} · ${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}</div></div>
+          <button class="btn btn-sm btn-success py-0 px-2" ${alreadyAdded || resorts.length >= MAX_LOCATIONS ? 'disabled' : ''}
+            onclick='app.addResort(${JSON.stringify({ slug, name: r.name, lat: r.latitude, lon: r.longitude, timezone, location })})'>${alreadyAdded ? 'Added' : 'Add'}</button>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    resultsDiv.innerHTML = '<p class="text-danger small">Search failed. Please try again.</p>';
+  }
+}
+
+// Add location from coordinates
+async function addFromCoordinates() {
+  const nameInput = document.getElementById('coordName');
+  const latInput = document.getElementById('coordLat');
+  const lonInput = document.getElementById('coordLon');
+  const errorDiv = document.getElementById('coordError');
+
+  const name = nameInput.value.trim();
+  const lat = parseFloat(latInput.value);
+  const lon = parseFloat(lonInput.value);
+
+  errorDiv.textContent = '';
+
+  // Validation
+  if (!name) {
+    errorDiv.textContent = 'Please enter a location name.';
+    return;
+  }
+  if (isNaN(lat) || lat < -90 || lat > 90) {
+    errorDiv.textContent = 'Latitude must be between -90 and 90.';
+    return;
+  }
+  if (isNaN(lon) || lon < -180 || lon > 180) {
+    errorDiv.textContent = 'Longitude must be between -180 and 180.';
+    return;
+  }
+  if (resorts.length >= MAX_LOCATIONS) {
+    errorDiv.textContent = `Maximum of ${MAX_LOCATIONS} locations reached.`;
+    return;
+  }
+  if (resorts.some(r => Math.abs(r.lat - lat) < 0.01 && Math.abs(r.lon - lon) < 0.01)) {
+    errorDiv.textContent = 'This location is already in your list.';
+    return;
+  }
+
+  // Fetch timezone
+  errorDiv.textContent = 'Looking up timezone...';
+  try {
+    const timezone = await getTimezoneForCoords(lat, lon);
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    resorts.push({
+      slug,
+      name,
+      lat,
+      lon,
+      timezone,
+      location: `${lat.toFixed(4)}, ${lon.toFixed(4)}`
+    });
+    saveLocations(currentActivity, resorts);
+    renderNav();
+    renderEditList();
+    loadAllResorts();
+  } catch (e) {
+    errorDiv.textContent = 'Failed to lookup timezone. Please try again.';
   }
 }
 
@@ -222,28 +702,42 @@ async function loadAllResorts(useCache = false) {
   if (legendBar) legendBar.style.display = resorts.length > 0 ? '' : 'none';
 
   if (resorts.length === 0) {
+    // Hide locations bar and edit buttons when empty
+    document.querySelectorAll('.locations-bar, .edit-btn-desktop, .edit-btn-mobile').forEach(el => el.style.display = 'none');
+
     if (currentActivity === 'dogwalk') {
       container.innerHTML = `<div class="col-12 text-center py-5"><h5 class="text-muted">🐕 No locations set</h5><p class="text-muted">Allow location access or add a location manually.</p></div>`;
     } else {
+      // Show popular resorts + 3-section add UI for empty state
       container.innerHTML = `
-        <div class="col-12 text-center py-5">
-          <h5 class="text-muted mb-3">🎿 Get started with a popular resort</h5>
-          <div class="suggested-resorts d-flex flex-wrap justify-content-center gap-2 mb-4">
-            ${SUGGESTED_RESORTS.map(r => `
-              <button class="btn suggested-resort-btn" onclick='app.addSuggestedResort(${JSON.stringify(r)})'>
-                <span class="resort-name">${r.name}</span>
-                <span class="resort-location">${r.location}</span>
-              </button>
-            `).join('')}
+        <div class="col-12">
+          <div class="empty-state-card">
+            <h5 class="text-center mb-3">🎿 Get started</h5>
+
+            <div class="popular-resorts-section mb-4">
+              <div class="text-muted small text-center mb-2">Quick add a popular resort:</div>
+              <div class="suggested-resorts d-flex justify-content-center gap-2">
+                ${SUGGESTED_RESORTS.map(r => `
+                  <button class="btn suggested-resort-btn" onclick='app.addSuggestedResort(${JSON.stringify(r)})'>
+                    <span class="resort-name">${r.name}</span>
+                    <span class="resort-location">${r.location}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="or-divider mb-4"><span>or find another</span></div>
+
+            <div id="emptyStateAddSection"></div>
           </div>
-          <div class="or-divider mb-3"><span>or</span></div>
-          <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editSection">
-            🔍 Search for a different location
-          </button>
         </div>
       `;
+      renderEmptyStateAddSection();
     }
     return;
+  } else {
+    // Show locations bar and edit buttons when not empty
+    document.querySelectorAll('.locations-bar, .edit-btn-desktop, .edit-btn-mobile').forEach(el => el.style.display = '');
   }
 
   const charts = [];
@@ -399,7 +893,7 @@ async function init() {
 }
 
 // Expose to global scope for onclick handlers
-window.app = { setActivity, setChartMode, moveResort, removeResort, addResort, addSuggestedResort, resetLocations, manualRefresh, init };
+window.app = { setActivity, setChartMode, moveResort, removeResort, addResort, addSuggestedResort, addSkiResort, showStateResorts, showEmptyStateResorts, resetLocations, manualRefresh, init };
 
 // Auto-init when DOM ready
 if (document.readyState === 'loading') {

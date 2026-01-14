@@ -108,3 +108,12 @@ export async function searchLocations(query) {
   const data = await response.json();
   return data.results || [];
 }
+
+export async function getTimezoneForCoords(lat, lon) {
+  const response = await fetch(
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&forecast_days=1`
+  );
+  if (!response.ok) throw new Error('Failed to fetch timezone');
+  const data = await response.json();
+  return data.timezone || 'America/New_York';
+}
