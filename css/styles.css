@@ -151,7 +151,7 @@ body {
 }
 
 .rain-total {
-  background: #22c55e;
+  background: #dc2626;
   color: #fff;
   font-size: 0.55rem;
   font-weight: 600;
@@ -466,7 +466,7 @@ body {
 }
 
 .legend-precip-box.snow { background: rgba(59, 130, 246, 0.9); }
-.legend-precip-box.rain { background: #22c55e; }
+.legend-precip-box.rain { background: #dc2626; }
 
 /* Legend bar */
 .legend-bar {
