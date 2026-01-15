@@ -14,6 +14,32 @@ if (!localStorage.getItem(MIGRATION_KEY)) {
   localStorage.setItem(MIGRATION_KEY, 'done');
 }
 
+// One-time migration: add city data to saved locations (v0.33)
+const MIGRATION_V033_KEY = 'gowindow-migration-v033';
+if (!localStorage.getItem(MIGRATION_V033_KEY)) {
+  ['skiing', 'dogwalk'].forEach(activity => {
+    const key = `weatherplanner-locations-${activity}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        const locations = JSON.parse(saved);
+        const updated = locations.map(loc => {
+          // Find matching resort by coordinates
+          const match = SKI_RESORTS.find(r =>
+            Math.abs(r.lat - loc.lat) < 0.01 && Math.abs(r.lon - loc.lon) < 0.01
+          );
+          if (match && match.city) {
+            return { ...loc, location: `${match.city}, ${match.state}, USA` };
+          }
+          return loc;
+        });
+        localStorage.setItem(key, JSON.stringify(updated));
+      } catch (e) { /* ignore parse errors */ }
+    }
+  });
+  localStorage.setItem(MIGRATION_V033_KEY, 'done');
+}
+
 // App State
 let currentActivity = loadActivity();
 let currentChartMode = loadChartMode();
