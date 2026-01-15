@@ -297,7 +297,7 @@ function addSkiResort(resort) {
     lat: resort.lat,
     lon: resort.lon,
     timezone: resort.timezone,
-    location: `${resort.state}, USA`
+    location: `${resort.city}, ${resort.state}, USA`
   });
   saveLocations(currentActivity, resorts);
   renderNav();
