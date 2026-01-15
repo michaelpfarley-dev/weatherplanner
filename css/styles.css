@@ -182,7 +182,9 @@ body {
 }
 
 .day-band.heavy-snow .snow-flakes,
-.day-band.heavy-snow .snow-total {
+.day-band.heavy-snow .snow-total,
+.precip-day.heavy-snow .snow-flakes,
+.precip-day.heavy-snow .snow-total {
   animation: snow-element-flash 1.5s ease-in-out infinite;
 }
 

@@ -191,7 +191,7 @@ export function renderChart(resort, data, currentActivity, chartMode = 'detailed
               const snowInches = d.snow / 2.54;
               const isHeavySnow = snowInches >= 1.95;
               const snowflakes = isHeavySnow ? '<span class="snow-flakes">❄</span>' : '';
-              return `<div class="precip-day${d.isHistorical ? ' historical' : ''}">${d.snow >= 0.25 ? `<span class="snow-badge-wrap"><span class="snow-total">${snowInches.toFixed(1)}"</span>${snowflakes}</span>` : ''}${d.rain >= 2.5 && d.tempMax > 34 ? `<span class="rain-total">${(d.rain / 25.4).toFixed(2)}"</span>` : ''}</div>`;
+              return `<div class="precip-day${isHeavySnow ? ' heavy-snow' : ''}${d.isHistorical ? ' historical' : ''}">${d.snow >= 0.25 ? `<span class="snow-badge-wrap"><span class="snow-total">${snowInches.toFixed(1)}"</span>${snowflakes}</span>` : ''}${d.rain >= 2.5 && d.tempMax > 34 ? `<span class="rain-total">${(d.rain / 25.4).toFixed(2)}"</span>` : ''}</div>`;
             }).join('')}
           </div>
           <div class="chart">
