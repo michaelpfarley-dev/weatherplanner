@@ -1,7 +1,7 @@
 // Weather API functions for GoWindow
 
 export async function fetchForecast(resort) {
-  const url = `https://api.open-meteo.com/v1/gfs?` +
+  const url = `https://api.open-meteo.com/v1/forecast?` +
     `latitude=${resort.lat}&longitude=${resort.lon}` +
     `&hourly=temperature_2m,precipitation_probability,snowfall,weather_code` +
     `&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min,precipitation_probability_max,snowfall_sum,rain_sum,weather_code` +
@@ -86,7 +86,7 @@ export async function fetchForecast(resort) {
 }
 
 export async function fetchHourlyForecast(resort) {
-  const url = `https://api.open-meteo.com/v1/gfs?` +
+  const url = `https://api.open-meteo.com/v1/forecast?` +
     `latitude=${resort.lat}&longitude=${resort.lon}` +
     `&hourly=temperature_2m,precipitation_probability,snowfall,weather_code,wind_speed_10m,wind_gusts_10m` +
     `&daily=sunrise,sunset` +
