@@ -44,7 +44,13 @@ export function calculateSkiingQuality(day, prevDay, prevDay2) {
   // Below freezing = any precip is snow, so it's good skiing weather
   if (tempMax <= 32) return 'good';
   if (tempMin < 30 && precipProb <= 30) return 'good';
-  if (tempMax > 32 && tempMax <= 40 && precipProb > 40) return 'icy';
+
+  // If it's snowing (not rain), high precip prob is fine - it's just more snow
+  if (hasSnowCode && tempMax <= 40) return 'fair';
+
+  // High precip with temps 32-40 and NO snow code = potential freezing rain/slush
+  if (tempMax > 32 && tempMax <= 40 && precipProb > 40 && !hasSnowCode) return 'icy';
+
   if (precipProb <= 20) return 'fair';
   if (tempMax <= 40 && precipProb <= 50) return 'fair';
 
