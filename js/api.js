@@ -101,12 +101,60 @@ export async function fetchHourlyForecast(resort) {
   return response.json();
 }
 
+// US state name to abbreviation mapping for search filtering
+const STATE_ABBREV = {
+  'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+  'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+  'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+  'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+  'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
+  'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
+  'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH',
+  'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+  'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
+  'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY'
+};
+
+// Reverse mapping: abbreviation to full name
+const ABBREV_TO_STATE = Object.fromEntries(
+  Object.entries(STATE_ABBREV).map(([name, abbr]) => [abbr.toLowerCase(), name])
+);
+
 export async function searchLocations(query) {
+  // Parse "city, state" format
+  let cityName = query.trim();
+  let stateFilter = null;
+
+  const commaMatch = query.match(/^(.+?),\s*(.+)$/);
+  if (commaMatch) {
+    cityName = commaMatch[1].trim();
+    const stateInput = commaMatch[2].trim().toLowerCase();
+    // Check if it's a state abbreviation or full name
+    if (STATE_ABBREV[stateInput]) {
+      stateFilter = stateInput; // full state name
+    } else if (ABBREV_TO_STATE[stateInput]) {
+      stateFilter = ABBREV_TO_STATE[stateInput]; // convert abbrev to full name
+    }
+  }
+
   const response = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
+    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=50&language=en&format=json`
   );
   const data = await response.json();
-  return data.results || [];
+  let results = data.results || [];
+
+  // Filter by state if provided
+  if (stateFilter && results.length > 0) {
+    const filtered = results.filter(r =>
+      r.admin1 && r.admin1.toLowerCase() === stateFilter
+    );
+    // If filter found results, use them; otherwise return all results
+    if (filtered.length > 0) {
+      results = filtered;
+    }
+  }
+
+  return results.slice(0, 10);
 }
 
 export async function getTimezoneForCoords(lat, lon) {
