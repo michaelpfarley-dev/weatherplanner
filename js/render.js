@@ -33,11 +33,16 @@ export function getVisibleDays(allDays) {
 
 export function renderChart(resort, data, currentActivity, chartMode = 'detailed') {
   const daily = data.daily;
+  const now = new Date();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const currentHour = now.getHours();
+  // After 7 PM, consider today as historical (daylight is over)
+  const todayIsOver = currentHour >= 19;
 
   const allDays = daily.time.map((t, i) => {
     const dayDate = new Date(t + 'T12:00:00');
+    const isToday = dayDate.toDateString() === today.toDateString();
     return {
       date: formatDate(t), rawDate: t,
       tempMax: Math.round(daily.temperature_2m_max[i]),
@@ -53,7 +58,7 @@ export function renderChart(resort, data, currentActivity, chartMode = 'detailed
       daylightWeatherCodes: daily.daylight_weather_codes[i],
       hourlyTemps: daily.daylight_hourly_temps[i] || [],
       hourlyPrecips: daily.daylight_hourly_precips[i] || [],
-      isHistorical: dayDate < today
+      isHistorical: dayDate < today || (isToday && todayIsOver)
     };
   });
 
